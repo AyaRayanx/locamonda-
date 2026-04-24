@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("locamonda")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fdb92d67d738ac565b4f630163fd8724a44f5582")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f337ad5bde238e90d6bbcb511f9d8dd4656405e9")]
 [assembly: System.Reflection.AssemblyProductAttribute("locamonda")]
 [assembly: System.Reflection.AssemblyTitleAttribute("locamonda")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
