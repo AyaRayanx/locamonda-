@@ -65,3 +65,37 @@ C:\Users\Amir Elfoly\Downloads\My-Github\locamonda-\locamonda\obj\Debug\net8.0\r
 C:\Users\Amir Elfoly\Downloads\My-Github\locamonda-\locamonda\obj\Debug\net8.0\locamonda.pdb
 C:\Users\Amir Elfoly\Downloads\My-Github\locamonda-\locamonda\obj\Debug\net8.0\locamonda.genruntimeconfig.cache
 C:\Users\Amir Elfoly\Downloads\My-Github\locamonda-\locamonda\obj\Debug\net8.0\ref\locamonda.dll
+C:\Users\Aya\locamonda-\locamonda\bin\Debug\net8.0\appsettings.Development.json
+C:\Users\Aya\locamonda-\locamonda\bin\Debug\net8.0\appsettings.json
+C:\Users\Aya\locamonda-\locamonda\bin\Debug\net8.0\locamonda.staticwebassets.runtime.json
+C:\Users\Aya\locamonda-\locamonda\bin\Debug\net8.0\locamonda.staticwebassets.endpoints.json
+C:\Users\Aya\locamonda-\locamonda\bin\Debug\net8.0\locamonda.exe
+C:\Users\Aya\locamonda-\locamonda\bin\Debug\net8.0\locamonda.deps.json
+C:\Users\Aya\locamonda-\locamonda\bin\Debug\net8.0\locamonda.runtimeconfig.json
+C:\Users\Aya\locamonda-\locamonda\bin\Debug\net8.0\locamonda.dll
+C:\Users\Aya\locamonda-\locamonda\bin\Debug\net8.0\locamonda.pdb
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\rpswa.dswa.cache.json
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\locamonda.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\locamonda.AssemblyInfoInputs.cache
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\locamonda.AssemblyInfo.cs
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\locamonda.csproj.CoreCompileInputs.cache
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\locamonda.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\locamonda.RazorAssemblyInfo.cache
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\locamonda.RazorAssemblyInfo.cs
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\locamonda.sourcelink.json
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\rjimswa.dswa.cache.json
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\scopedcss\bundle\locamonda.styles.css
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\scopedcss\projectbundle\locamonda.bundle.scp.css
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\staticwebassets.build.json
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\staticwebassets.build.json.cache
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\staticwebassets.development.json
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\staticwebassets.build.endpoints.json
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\swae.build.ex.cache
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\locamonda.dll
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\refint\locamonda.dll
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\locamonda.pdb
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\locamonda.genruntimeconfig.cache
+C:\Users\Aya\locamonda-\locamonda\obj\Debug\net8.0\ref\locamonda.dll
