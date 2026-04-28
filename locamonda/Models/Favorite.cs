@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace locamonda.Models
@@ -8,17 +8,23 @@ namespace locamonda.Models
         [Key]
         public int FavoriteId { get; set; }
 
+        [DataType(DataType.DateTime)]
+        public DateTime SavedAt { get; set; } = DateTime.Now;
+
+        /* Foreign Keys */
+
         [Required]
         public int UserId { get; set; }
 
         [Required]
-        public int RealEstateId { get; set; }
+        public int PropertyId { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        /* Navigation Properties */
 
-        //  Navigation
-        public Users User { get; set; }
+        [ForeignKey("UserId")]
+        public Users User { get; set; } = null!;
 
-        public RealEstate RealEstate { get; set; }
+        [ForeignKey("PropertyId")]
+        public Property Property { get; set; } = null!;
     }
 }
