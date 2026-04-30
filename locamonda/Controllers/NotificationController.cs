@@ -1,96 +1,90 @@
 using locamonda.Models;
+using locamonda.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace locamonda.Controllers
 {
+    [Authorize]
     public class NotificationController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly AppDbContext _context;
+        private readonly UserManager<Users> _userManager;
 
-        public NotificationController(ApplicationDbContext context)
+        public NotificationController(AppDbContext context, UserManager<Users> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // ─── Index ─────────────────────────────
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (userIdStr == null)
-                return RedirectToAction("Login", "Users");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
-            int userId = int.Parse(userIdStr);
-
-            var notifications = _context.Notifications
-                .Where(n => n.UserId == userId)
+            var notifications = await _context.Notifications
+                .Where(n => n.UserId == user.Id)
                 .OrderByDescending(n => n.CreatedAt)
-                .ToList();
+                .ToListAsync();
 
             return View(notifications);
         }
 
         // ─── Mark One as Read ─────────────────
 
-        public IActionResult MarkRead(int id)
+        public async Task<IActionResult> MarkRead(int id)
         {
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (userIdStr == null)
-                return RedirectToAction("Login", "Users");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
-            int userId = int.Parse(userIdStr);
-
-            var notification = _context.Notifications
-                .FirstOrDefault(n => n.NotificationId == id && n.UserId == userId);
+            var notification = await _context.Notifications
+                .FirstOrDefaultAsync(n => n.NotificationId == id && n.UserId == user.Id);
 
             if (notification == null) return NotFound();
 
             notification.IsRead = true;
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
 
         // ─── Mark All as Read ─────────────────
 
-        public IActionResult MarkAllRead()
+        public async Task<IActionResult> MarkAllRead()
         {
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (userIdStr == null)
-                return RedirectToAction("Login", "Users");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
-            int userId = int.Parse(userIdStr);
-
-            var unread = _context.Notifications
-                .Where(n => n.UserId == userId && !n.IsRead)
-                .ToList();
+            var unread = await _context.Notifications
+                .Where(n => n.UserId == user.Id && !n.IsRead)
+                .ToListAsync();
 
             foreach (var n in unread)
                 n.IsRead = true;
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
 
         // ─── Delete ───────────────────────────
 
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (userIdStr == null)
-                return RedirectToAction("Login", "Users");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
-            int userId = int.Parse(userIdStr);
-
-            var notification = _context.Notifications
-                .FirstOrDefault(n => n.NotificationId == id && n.UserId == userId);
+            var notification = await _context.Notifications
+                .FirstOrDefaultAsync(n => n.NotificationId == id && n.UserId == user.Id);
 
             if (notification == null) return NotFound();
 
             _context.Notifications.Remove(notification);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }

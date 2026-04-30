@@ -1,47 +1,46 @@
 using locamonda.Models;
+using locamonda.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace locamonda.Controllers
 {
+    [Authorize]
     public class MessageController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly AppDbContext _context;
+        private readonly UserManager<Users> _userManager;
 
-        public MessageController(ApplicationDbContext context)
+        public MessageController(AppDbContext context, UserManager<Users> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // ─── Inbox ─────────────────────────────
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (userIdStr == null)
-                return RedirectToAction("Login", "Users");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
-            int userId = int.Parse(userIdStr);
-
-            var messages = _context.Messages
+            var messages = await _context.Messages
                 .Include(m => m.Sender)
                 .Include(m => m.Property)
-                .Where(m => m.ReceiverId == userId)
+                .Where(m => m.ReceiverId == user.Id)
                 .OrderByDescending(m => m.SentAt)
-                .ToList();
+                .ToListAsync();
 
             return View(messages);
         }
 
         // ─── Send GET ─────────────────────────
 
-        public IActionResult Send(int propertyId)
+        public async Task<IActionResult> Send(int propertyId)
         {
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (userIdStr == null)
-                return RedirectToAction("Login", "Users");
-
-            var property = _context.Properties.Find(propertyId);
+            var property = await _context.Properties.FindAsync(propertyId);
             if (property == null) return NotFound();
 
             ViewBag.Property = property;
@@ -52,20 +51,17 @@ namespace locamonda.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Send(Message message)
+        public async Task<IActionResult> Send(Message message)
         {
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (userIdStr == null)
-                return RedirectToAction("Login", "Users");
-
-            int senderId = int.Parse(userIdStr);
-
             if (ModelState.IsValid)
             {
-                var property = _context.Properties.Find(message.PropertyId);
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null) return Challenge();
+
+                var property = await _context.Properties.FindAsync(message.PropertyId);
                 if (property == null) return NotFound();
 
-                message.SenderId = senderId;
+                message.SenderId = user.Id;
                 message.ReceiverId = property.OwnerId;
                 message.IsRead = false;
                 message.SentAt = DateTime.Now;
@@ -82,55 +78,49 @@ namespace locamonda.Controllers
                     CreatedAt = DateTime.Now
                 });
 
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
 
                 return RedirectToAction("Details", "Property", new { id = message.PropertyId });
             }
 
-            ViewBag.Property = _context.Properties.Find(message.PropertyId);
+            ViewBag.Property = await _context.Properties.FindAsync(message.PropertyId);
             return View(message);
         }
 
         // ─── Mark as Read ─────────────────────
 
-        public IActionResult MarkRead(int id)
+        public async Task<IActionResult> MarkRead(int id)
         {
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (userIdStr == null)
-                return RedirectToAction("Login", "Users");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
-            int userId = int.Parse(userIdStr);
-
-            var message = _context.Messages
-                .FirstOrDefault(m => m.MessageId == id && m.ReceiverId == userId);
+            var message = await _context.Messages
+                .FirstOrDefaultAsync(m => m.MessageId == id && m.ReceiverId == user.Id);
 
             if (message == null) return NotFound();
 
             message.IsRead = true;
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
 
         // ─── Delete ───────────────────────────
 
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (userIdStr == null)
-                return RedirectToAction("Login", "Users");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
-            int userId = int.Parse(userIdStr);
-
-            var message = _context.Messages
-                .FirstOrDefault(m =>
+            var message = await _context.Messages
+                .FirstOrDefaultAsync(m =>
                     m.MessageId == id &&
-                    (m.SenderId == userId || m.ReceiverId == userId));
+                    (m.SenderId == user.Id || m.ReceiverId == user.Id));
 
             if (message == null) return NotFound();
 
             _context.Messages.Remove(message);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }

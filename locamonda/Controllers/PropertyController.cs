@@ -1,4 +1,7 @@
 using locamonda.Models;
+using locamonda.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -7,11 +10,13 @@ namespace locamonda.Controllers
 {
     public class PropertyController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly AppDbContext _context;
+        private readonly UserManager<Users> _userManager;
 
-        public PropertyController(ApplicationDbContext context)
+        public PropertyController(AppDbContext context, UserManager<Users> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // ─── Index ─────────────────────────────
@@ -62,12 +67,9 @@ namespace locamonda.Controllers
 
         // ─── Create GET ────────────────────────
 
+        [Authorize(Roles = "Owner")]
         public IActionResult Create()
         {
-            var role = HttpContext.Session.GetString("AccountType");
-            if (role != "Owner")
-                return RedirectToAction("Login", "Users");
-
             ViewBag.Locations = new SelectList(_context.Locations, "LocationId", "City");
             ViewBag.Categories = new SelectList(_context.Categories, "CategoryId", "Name");
             ViewBag.Amenities = _context.Amenities.ToList();
@@ -79,33 +81,33 @@ namespace locamonda.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Property property, int[] amenityIds)
+        [Authorize(Roles = "Owner")]
+        public async Task<IActionResult> Create(Property property, int[] amenityIds)
         {
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            var role = HttpContext.Session.GetString("AccountType");
-
-            if (userIdStr == null || role != "Owner")
-                return RedirectToAction("Login", "Users");
-
             if (ModelState.IsValid)
             {
-                property.OwnerId = int.Parse(userIdStr);
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null) return Challenge();
+
+                property.OwnerId = user.Id;
                 property.DateAdded = DateTime.Now;
                 property.IsActive = true;
 
                 _context.Properties.Add(property);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
 
-                foreach (var id in amenityIds)
+                if (amenityIds != null)
                 {
-                    _context.PropertyAmenities.Add(new PropertyAmenity
+                    foreach (var id in amenityIds)
                     {
-                        PropertyId = property.PropertyId,
-                        AmenityId = id
-                    });
+                        _context.PropertyAmenities.Add(new PropertyAmenity
+                        {
+                            PropertyId = property.PropertyId,
+                            AmenityId = id
+                        });
+                    }
+                    await _context.SaveChangesAsync();
                 }
-
-                _context.SaveChanges();
 
                 return RedirectToAction(nameof(Index));
             }
@@ -119,15 +121,14 @@ namespace locamonda.Controllers
 
         // ─── Edit GET ──────────────────────────
 
-        public IActionResult Edit(int id)
+        [Authorize(Roles = "Owner")]
+        public async Task<IActionResult> Edit(int id)
         {
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (userIdStr == null) return RedirectToAction("Login", "Users");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
-            int userId = int.Parse(userIdStr);
-
-            var property = _context.Properties
-                .FirstOrDefault(p => p.PropertyId == id && p.OwnerId == userId);
+            var property = await _context.Properties
+                .FirstOrDefaultAsync(p => p.PropertyId == id && p.OwnerId == user.Id);
 
             if (property == null) return NotFound();
 
@@ -141,17 +142,16 @@ namespace locamonda.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Property updatedProperty)
+        [Authorize(Roles = "Owner")]
+        public async Task<IActionResult> Edit(Property updatedProperty)
         {
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (userIdStr == null) return RedirectToAction("Login", "Users");
-
-            int userId = int.Parse(userIdStr);
-
             if (ModelState.IsValid)
             {
-                var property = _context.Properties
-                    .FirstOrDefault(p => p.PropertyId == updatedProperty.PropertyId && p.OwnerId == userId);
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null) return Challenge();
+
+                var property = await _context.Properties
+                    .FirstOrDefaultAsync(p => p.PropertyId == updatedProperty.PropertyId && p.OwnerId == user.Id);
 
                 if (property == null) return NotFound();
 
@@ -164,7 +164,7 @@ namespace locamonda.Controllers
                 property.LocationId = updatedProperty.LocationId;
                 property.CategoryId = updatedProperty.CategoryId;
 
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
 
                 return RedirectToAction(nameof(Index));
             }
@@ -174,40 +174,37 @@ namespace locamonda.Controllers
 
         // ─── Delete (soft) ─────────────────────
 
-        public IActionResult Delete(int id)
+        [Authorize(Roles = "Owner")]
+        public async Task<IActionResult> Delete(int id)
         {
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (userIdStr == null) return RedirectToAction("Login", "Users");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
-            int userId = int.Parse(userIdStr);
-
-            var property = _context.Properties
-                .FirstOrDefault(p => p.PropertyId == id && p.OwnerId == userId);
+            var property = await _context.Properties
+                .FirstOrDefaultAsync(p => p.PropertyId == id && p.OwnerId == user.Id);
 
             if (property == null) return NotFound();
 
             property.IsActive = false;
-
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
 
         // ─── My Properties ─────────────────────
 
-        public IActionResult MyProperties()
+        [Authorize(Roles = "Owner")]
+        public async Task<IActionResult> MyProperties()
         {
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (userIdStr == null) return RedirectToAction("Login", "Users");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
-            int userId = int.Parse(userIdStr);
-
-            var properties = _context.Properties
+            var properties = await _context.Properties
                 .Include(p => p.Location)
                 .Include(p => p.Category)
                 .Include(p => p.Photos)
-                .Where(p => p.OwnerId == userId)
-                .ToList();
+                .Where(p => p.OwnerId == user.Id)
+                .ToListAsync();
 
             return View(properties);
         }

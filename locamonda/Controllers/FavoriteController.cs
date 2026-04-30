@@ -1,35 +1,38 @@
 using locamonda.Models;
+using locamonda.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace locamonda.Controllers
 {
+    [Authorize]
     public class FavoriteController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly AppDbContext _context;
+        private readonly UserManager<Users> _userManager;
 
-        public FavoriteController(ApplicationDbContext context)
+        public FavoriteController(AppDbContext context, UserManager<Users> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // ─── Index ─────────────────────────────
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (userIdStr == null)
-                return RedirectToAction("Login", "Users");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
-            int userId = int.Parse(userIdStr);
-
-            var favorites = _context.Favorites
+            var favorites = await _context.Favorites
                 .Include(f => f.Property)
                     .ThenInclude(p => p.Location)
                 .Include(f => f.Property)
                     .ThenInclude(p => p.Photos)
-                .Where(f => f.UserId == userId)
-                .ToList();
+                .Where(f => f.UserId == user.Id)
+                .ToListAsync();
 
             return View(favorites);
         }
@@ -38,27 +41,24 @@ namespace locamonda.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Add(int propertyId)
+        public async Task<IActionResult> Add(int propertyId)
         {
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (userIdStr == null)
-                return RedirectToAction("Login", "Users");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
-            int userId = int.Parse(userIdStr);
-
-            bool exists = _context.Favorites
-                .Any(f => f.UserId == userId && f.PropertyId == propertyId);
+            bool exists = await _context.Favorites
+                .AnyAsync(f => f.UserId == user.Id && f.PropertyId == propertyId);
 
             if (!exists)
             {
                 _context.Favorites.Add(new Favorite
                 {
-                    UserId = userId,
+                    UserId = user.Id,
                     PropertyId = propertyId,
                     SavedAt = DateTime.Now
                 });
 
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
 
             return RedirectToAction("Details", "Property", new { id = propertyId });
@@ -66,21 +66,18 @@ namespace locamonda.Controllers
 
         // ─── Remove ────────────────────────────
 
-        public IActionResult Remove(int favoriteId)
+        public async Task<IActionResult> Remove(int favoriteId)
         {
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (userIdStr == null)
-                return RedirectToAction("Login", "Users");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
-            int userId = int.Parse(userIdStr);
-
-            var favorite = _context.Favorites
-                .FirstOrDefault(f => f.FavoriteId == favoriteId && f.UserId == userId);
+            var favorite = await _context.Favorites
+                .FirstOrDefaultAsync(f => f.FavoriteId == favoriteId && f.UserId == user.Id);
 
             if (favorite == null) return NotFound();
 
             _context.Favorites.Remove(favorite);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }

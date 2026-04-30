@@ -15,7 +15,7 @@ namespace locamonda.Models
         [Required(ErrorMessage = "Comment is required")]
         [StringLength(1000, MinimumLength = 10, ErrorMessage = "Comment must be between 10 and 1000 characters")]
         [Column(TypeName = "nvarchar(1000)")]
-        public string Comment { get; set; }
+        public string Comment { get; set; } = string.Empty;
 
         [Required]
         [DataType(DataType.DateTime)]
@@ -34,9 +34,9 @@ namespace locamonda.Models
         /* Navigation Properties */
 
         [ForeignKey("UserId")]
-        public virtual Users User { get; set; }
+        public virtual Users User { get; set; } = null!;
 
         [ForeignKey("PropertyId")]
-        public virtual Property Property { get; set; }
+        public virtual Property Property { get; set; } = null!;
     }
 }

@@ -1,27 +1,30 @@
 using locamonda.Models;
+using locamonda.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace locamonda.Controllers
 {
+    [Authorize(Roles = "Owner")]
     public class PhotoController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly AppDbContext _context;
         private readonly IWebHostEnvironment _environment;
+        private readonly UserManager<Users> _userManager;
 
-        public PhotoController(ApplicationDbContext context, IWebHostEnvironment environment)
+        public PhotoController(AppDbContext context, IWebHostEnvironment environment, UserManager<Users> userManager)
         {
             _context = context;
             _environment = environment;
+            _userManager = userManager;
         }
 
         // ─── Upload GET ───────────────────────
 
         public IActionResult Upload(int propertyId)
         {
-            var userId = HttpContext.Session.GetString("UserId");
-            if (userId == null)
-                return RedirectToAction("Login", "Users");
-
             ViewBag.PropertyId = propertyId;
             return View();
         }
@@ -30,18 +33,23 @@ namespace locamonda.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Upload(int propertyId, IFormFile photoFile, bool isMain)
+        public async Task<IActionResult> Upload(int propertyId, IFormFile photoFile, bool isMain)
         {
-            var userId = HttpContext.Session.GetString("UserId");
-            if (userId == null)
-                return RedirectToAction("Login", "Users");
-
             if (photoFile == null || photoFile.Length == 0)
             {
                 ViewBag.Error = "Please select a photo to upload";
                 ViewBag.PropertyId = propertyId;
                 return View();
             }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
+
+            // Verify property ownership
+            var property = await _context.Properties
+                .FirstOrDefaultAsync(p => p.PropertyId == propertyId && p.OwnerId == user.Id);
+            
+            if (property == null) return Unauthorized();
 
             string uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads");
             Directory.CreateDirectory(uploadsFolder);
@@ -52,14 +60,14 @@ namespace locamonda.Controllers
 
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
-                photoFile.CopyTo(stream);
+                await photoFile.CopyToAsync(stream);
             }
 
             // remove old main if needed
             if (isMain)
             {
-                var oldMain = _context.Photos
-                    .FirstOrDefault(p => p.PropertyId == propertyId && p.IsMain);
+                var oldMain = await _context.Photos
+                    .FirstOrDefaultAsync(p => p.PropertyId == propertyId && p.IsMain);
 
                 if (oldMain != null)
                     oldMain.IsMain = false;
@@ -74,20 +82,22 @@ namespace locamonda.Controllers
             };
 
             _context.Photos.Add(photo);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return RedirectToAction("Details", "Property", new { id = propertyId });
         }
 
         // ─── Delete ───────────────────────────
 
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var userId = HttpContext.Session.GetString("UserId");
-            if (userId == null)
-                return RedirectToAction("Login", "Users");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
-            var photo = _context.Photos.Find(id);
+            var photo = await _context.Photos
+                .Include(p => p.Property)
+                .FirstOrDefaultAsync(p => p.PhotoId == id && p.Property.OwnerId == user.Id);
+
             if (photo == null) return NotFound();
 
             int propertyId = photo.PropertyId;
@@ -98,7 +108,7 @@ namespace locamonda.Controllers
                 System.IO.File.Delete(filePath);
 
             _context.Photos.Remove(photo);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return RedirectToAction("Details", "Property", new { id = propertyId });
         }

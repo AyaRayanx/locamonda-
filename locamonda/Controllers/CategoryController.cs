@@ -1,14 +1,17 @@
 using locamonda.Models;
+using locamonda.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace locamonda.Controllers
 {
+    [Authorize(Roles = "Owner")]
     public class CategoryController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly AppDbContext _context;
 
-        public CategoryController(ApplicationDbContext context)
+        public CategoryController(AppDbContext context)
         {
             _context = context;
         }

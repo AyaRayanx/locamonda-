@@ -1,41 +1,43 @@
 using locamonda.Models;
+using locamonda.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace locamonda.Controllers
 {
+    [Authorize]
     public class ReviewController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly AppDbContext _context;
+        private readonly UserManager<Users> _userManager;
 
-        public ReviewController(ApplicationDbContext context)
+        public ReviewController(AppDbContext context, UserManager<Users> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // ─── Create Review ────────────────────────────────────────
 
         public IActionResult Create(int propertyId)
         {
-            if (HttpContext.Session.GetString("UserId") == null)
-                return RedirectToAction("Login", "Users");
-
             ViewBag.PropertyId = propertyId;
             return View();
         }
 
         [HttpPost]
-        public IActionResult Create(Review review)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Review review)
         {
-            if (HttpContext.Session.GetString("UserId") == null)
-                return RedirectToAction("Login", "Users");
-
             if (ModelState.IsValid)
             {
-                int userId = int.Parse(HttpContext.Session.GetString("UserId"));
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null) return Challenge();
 
-                bool alreadyReviewed = _context.Reviews
-                    .Any(r => r.UserId == userId && r.PropertyId == review.PropertyId);
+                bool alreadyReviewed = await _context.Reviews
+                    .AnyAsync(r => r.UserId == user.Id && r.PropertyId == review.PropertyId);
 
                 if (alreadyReviewed)
                 {
@@ -44,11 +46,11 @@ namespace locamonda.Controllers
                     return View(review);
                 }
 
-                review.UserId = userId;
+                review.UserId = user.Id;
                 review.CreatedAt = DateTime.Now;
 
                 _context.Reviews.Add(review);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
 
                 return RedirectToAction("Details", "Property", new { id = review.PropertyId });
             }
@@ -59,15 +61,13 @@ namespace locamonda.Controllers
 
         // ─── Delete Review ────────────────────────────────────────
 
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            if (HttpContext.Session.GetString("UserId") == null)
-                return RedirectToAction("Login", "Users");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
-            int userId = int.Parse(HttpContext.Session.GetString("UserId"));
-
-            var review = _context.Reviews
-                .FirstOrDefault(r => r.ReviewId == id && r.UserId == userId);
+            var review = await _context.Reviews
+                .FirstOrDefaultAsync(r => r.ReviewId == id && r.UserId == user.Id);
 
             if (review == null)
                 return NotFound();
@@ -75,7 +75,7 @@ namespace locamonda.Controllers
             int propertyId = review.PropertyId;
 
             _context.Reviews.Remove(review);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return RedirectToAction("Details", "Property", new { id = propertyId });
         }

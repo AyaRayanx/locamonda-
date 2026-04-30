@@ -1,47 +1,47 @@
 using locamonda.Models;
+using locamonda.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace locamonda.Controllers
 {
+    [Authorize]
     public class BookingController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly AppDbContext _context;
+        private readonly UserManager<Users> _userManager;
 
-        public BookingController(ApplicationDbContext context)
+        public BookingController(AppDbContext context, UserManager<Users> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
-        // ─── Index ─────────────────────────────
+        // ─── Index (My Bookings) ───────────────
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (userIdStr == null)
-                return RedirectToAction("Login", "Users");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
-            int userId = int.Parse(userIdStr);
-
-            var bookings = _context.Bookings
+            var bookings = await _context.Bookings
                 .Include(b => b.Property)
                     .ThenInclude(p => p.Location)
                 .Include(b => b.Property)
                     .ThenInclude(p => p.Photos)
-                .Where(b => b.UserId == userId)
-                .ToList();
+                .Where(b => b.UserId == user.Id)
+                .ToListAsync();
 
             return View(bookings);
         }
 
         // ─── Create GET ────────────────────────
 
-        public IActionResult Create(int propertyId)
+        public async Task<IActionResult> Create(int propertyId)
         {
-            if (HttpContext.Session.GetString("UserId") == null)
-                return RedirectToAction("Login", "Users");
-
-            var property = _context.Properties.Find(propertyId);
+            var property = await _context.Properties.FindAsync(propertyId);
             if (property == null) return NotFound();
 
             ViewBag.Property = property;
@@ -52,29 +52,28 @@ namespace locamonda.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Booking booking)
+        public async Task<IActionResult> Create(Booking booking)
         {
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (userIdStr == null)
-                return RedirectToAction("Login", "Users");
-
             if (ModelState.IsValid)
             {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null) return Challenge();
+
                 if (booking.EndDate <= booking.StartDate)
                 {
                     ViewBag.Error = "End date must be after start date";
-                    ViewBag.Property = _context.Properties.Find(booking.PropertyId);
+                    ViewBag.Property = await _context.Properties.FindAsync(booking.PropertyId);
                     return View(booking);
                 }
 
-                booking.UserId = int.Parse(userIdStr);
+                booking.UserId = user.Id;
                 booking.Status = "Pending";
                 booking.CreatedAt = DateTime.Now;
 
                 _context.Bookings.Add(booking);
 
-                var property = _context.Properties
-                    .FirstOrDefault(p => p.PropertyId == booking.PropertyId);
+                var property = await _context.Properties
+                    .FirstOrDefaultAsync(p => p.PropertyId == booking.PropertyId);
 
                 if (property != null)
                 {
@@ -82,56 +81,48 @@ namespace locamonda.Controllers
                     {
                         UserId = property.OwnerId,
                         Type = "NewBooking",
-                        NotificationMessage =
-                            $"You have a new booking request for: {property.Title}",
+                        NotificationMessage = $"You have a new booking request for: {property.Title}",
                         CreatedAt = DateTime.Now
                     });
                 }
 
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewBag.Property = _context.Properties.Find(booking.PropertyId);
+            ViewBag.Property = await _context.Properties.FindAsync(booking.PropertyId);
             return View(booking);
         }
 
         // ─── Cancel ────────────────────────────
 
-        public IActionResult Cancel(int id)
+        public async Task<IActionResult> Cancel(int id)
         {
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (userIdStr == null)
-                return RedirectToAction("Login", "Users");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
-            int userId = int.Parse(userIdStr);
-
-            var booking = _context.Bookings
-                .FirstOrDefault(b => b.BookingId == id && b.UserId == userId);
+            var booking = await _context.Bookings
+                .FirstOrDefaultAsync(b => b.BookingId == id && b.UserId == user.Id);
 
             if (booking == null) return NotFound();
 
             booking.Status = "Cancelled";
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
 
         // ─── Confirm (Owner) ───────────────────
 
-        public IActionResult Confirm(int id)
+        [Authorize(Roles = "Owner")]
+        public async Task<IActionResult> Confirm(int id)
         {
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (userIdStr == null)
-                return RedirectToAction("Login", "Users");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
-            int userId = int.Parse(userIdStr);
-
-            var booking = _context.Bookings
+            var booking = await _context.Bookings
                 .Include(b => b.Property)
-                .FirstOrDefault(b =>
-                    b.BookingId == id &&
-                    b.Property.OwnerId == userId);
+                .FirstOrDefaultAsync(b => b.BookingId == id && b.Property.OwnerId == user.Id);
 
             if (booking == null) return NotFound();
 
@@ -141,31 +132,27 @@ namespace locamonda.Controllers
             {
                 UserId = booking.UserId,
                 Type = "BookingConfirmed",
-                NotificationMessage =
-                    $"Your booking for {booking.Property.Title} is confirmed!",
+                NotificationMessage = $"Your booking for {booking.Property.Title} is confirmed!",
                 CreatedAt = DateTime.Now
             });
 
-            _context.SaveChanges();
-            return RedirectToAction(nameof(Index));
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(OwnerBookings));
         }
 
         // ─── Owner Bookings ────────────────────
 
-        public IActionResult OwnerBookings()
+        [Authorize(Roles = "Owner")]
+        public async Task<IActionResult> OwnerBookings()
         {
-            var type = HttpContext.Session.GetString("AccountType");
-            if (type != "Owner")
-                return RedirectToAction("Login", "Users");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            int userId = int.Parse(userIdStr);
-
-            var bookings = _context.Bookings
+            var bookings = await _context.Bookings
                 .Include(b => b.Property)
                 .Include(b => b.User)
-                .Where(b => b.Property.OwnerId == userId)
-                .ToList();
+                .Where(b => b.Property.OwnerId == user.Id)
+                .ToListAsync();
 
             return View(bookings);
         }

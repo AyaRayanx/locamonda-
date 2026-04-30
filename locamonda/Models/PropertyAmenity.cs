@@ -21,9 +21,9 @@ namespace locamonda.Models
         /* Navigation Properties */
 
         [ForeignKey("PropertyId")]
-        public virtual Property Property { get; set; }
+        public virtual Property Property { get; set; } = null!;
 
         [ForeignKey("AmenityId")]
-        public virtual Amenity Amenity { get; set; }
+        public virtual Amenity Amenity { get; set; } = null!;
     }
 }

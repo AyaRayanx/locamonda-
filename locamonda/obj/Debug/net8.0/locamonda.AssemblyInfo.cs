@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("locamonda")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e8602438c5f01785013cee8a5f3daa7443940a39")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+57725525b05c5486965680001354765702d34795")]
 [assembly: System.Reflection.AssemblyProductAttribute("locamonda")]
 [assembly: System.Reflection.AssemblyTitleAttribute("locamonda")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

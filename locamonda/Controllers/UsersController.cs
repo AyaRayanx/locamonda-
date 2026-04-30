@@ -1,15 +1,25 @@
 using locamonda.Models;
+using locamonda.Data;
+using locamonda.Models.ViewModels;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace locamonda.Controllers
 {
     public class UsersController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly UserManager<Users> _userManager;
+        private readonly SignInManager<Users> _signInManager;
+        private readonly AppDbContext _context;
 
-        public UsersController(ApplicationDbContext context)
+        public UsersController(
+            UserManager<Users> userManager,
+            SignInManager<Users> signInManager,
+            AppDbContext context)
         {
+            _userManager = userManager;
+            _signInManager = signInManager;
             _context = context;
         }
 
@@ -17,84 +27,95 @@ namespace locamonda.Controllers
 
         public IActionResult Register()
         {
+            if (User.Identity.IsAuthenticated)
+                return RedirectToAction("Index", "Home");
+
             return View();
         }
 
         [HttpPost]
-        public IActionResult Register(Users user)
+        public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (ModelState.IsValid)
             {
-                bool emailExists = _context.Users.Any(u => u.Email == user.Email);
-
-                if (emailExists)
+                var user = new Users
                 {
-                    ViewBag.Error = "Email is already registered";
-                    return View(user);
+                    UserName = model.Email,
+                    Email = model.Email,
+                    Name = model.Name,
+                    PhoneNumber = model.PhoneNumber,
+                    AccountType = model.AccountType,
+                    Address = model.Address,
+                    Age = model.Age,
+                    CreatedAt = DateTime.Now,
+                    IsActive = true
+                };
+
+                var result = await _userManager.CreateAsync(user, model.Password);
+
+                if (result.Succeeded)
+                {
+                    // Assign Role
+                    await _userManager.AddToRoleAsync(user, model.AccountType);
+                    
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    return RedirectToAction("Index", "Property");
                 }
 
-                user.CreatedAt = DateTime.Now;
-                user.IsActive = true;
-
-                _context.Users.Add(user);
-                _context.SaveChanges();
-
-                return RedirectToAction("Login");
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
             }
 
-            return View(user);
+            return View(model);
         }
 
         // ─── Login ───────────────────────────────────────────────
 
         public IActionResult Login()
         {
+            if (User.Identity.IsAuthenticated)
+                return RedirectToAction("Index", "Property");
+
             return View();
         }
 
         [HttpPost]
-        public IActionResult Login(string email, string password)
+        public async Task<IActionResult> Login(LoginViewModel model)
         {
-            var user = _context.Users
-                .FirstOrDefault(u =>
-                    u.Email == email &&
-                    u.Password == password &&
-                    u.IsActive);
-
-            if (user != null)
+            if (ModelState.IsValid)
             {
-                HttpContext.Session.SetString("UserId", user.UserId.ToString());
-                HttpContext.Session.SetString("UserName", user.Name);
-                HttpContext.Session.SetString("AccountType", user.AccountType);
+                var result = await _signInManager.PasswordSignInAsync(
+                    model.Email, 
+                    model.Password, 
+                    model.RememberMe, 
+                    lockoutOnFailure: false);
 
-                return RedirectToAction("Index", "Property");
+                if (result.Succeeded)
+                {
+                    return RedirectToAction("Index", "Property");
+                }
+
+                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             }
 
-            ViewBag.Error = "Invalid email or password";
-            return View();
+            return View(model);
         }
 
         // ─── Logout ──────────────────────────────────────────────
 
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
-            HttpContext.Session.Clear();
+            await _signInManager.SignOutAsync();
             return RedirectToAction("Login");
         }
 
         // ─── Profile ─────────────────────────────────────────────
 
-        public IActionResult Profile()
+        public async Task<IActionResult> Profile()
         {
-            string userIdStr = HttpContext.Session.GetString("UserId");
-
-            if (string.IsNullOrEmpty(userIdStr))
-                return RedirectToAction("Login");
-
-            int userId = int.Parse(userIdStr);
-
-            var user = _context.Users.Find(userId);
-
+            var user = await _userManager.GetUserAsync(User);
             if (user == null)
                 return RedirectToAction("Login");
 
@@ -102,35 +123,32 @@ namespace locamonda.Controllers
         }
 
         [HttpPost]
-        public IActionResult Profile(Users updatedUser)
+        public async Task<IActionResult> Profile(Users updatedUser)
         {
-            string userIdStr = HttpContext.Session.GetString("UserId");
-
-            if (string.IsNullOrEmpty(userIdStr))
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
                 return RedirectToAction("Login");
 
-            if (ModelState.IsValid)
+            // Only update allowed fields
+            user.Name = updatedUser.Name;
+            user.PhoneNumber = updatedUser.PhoneNumber;
+            user.Address = updatedUser.Address;
+            user.Age = updatedUser.Age;
+
+            var result = await _userManager.UpdateAsync(user);
+
+            if (result.Succeeded)
             {
-                int userId = int.Parse(userIdStr);
-
-                var user = _context.Users.Find(userId);
-
-                if (user == null)
-                    return RedirectToAction("Login");
-
-                user.Name = updatedUser.Name;
-                user.PhoneNumber = updatedUser.PhoneNumber;
-                user.Address = updatedUser.Address;
-                user.Age = updatedUser.Age;
-
-                _context.SaveChanges();
-
-                HttpContext.Session.SetString("UserName", user.Name);
-
-                return RedirectToAction("Profile");
+                ViewBag.Message = "Profile updated successfully";
+                return View(user);
             }
 
-            return View(updatedUser);
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            return View(user);
         }
     }
 }
