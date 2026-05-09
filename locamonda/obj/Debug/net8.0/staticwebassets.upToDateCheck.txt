@@ -1,5 +1,8 @@
 wwwroot\css\site.css
 wwwroot\favicon.ico
+wwwroot\images\Home.jpg
+wwwroot\images\property\ec2a8c01-2566-4645-bb1a-cdfd4378a22d.jpg
+wwwroot\images\Ris_login.jpg
 wwwroot\js\site.js
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map
@@ -58,3 +61,19 @@ wwwroot\lib\jquery\dist\jquery.js
 wwwroot\lib\jquery\dist\jquery.min.js
 wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
+wwwroot\uploads\443ce5ff-f1ae-49ab-82d9-7c3e4db41ad5_سيد سيجي.jpg
+wwwroot\uploads\68b8d20a-ad36-4898-8e4d-103b5141b249_Gta (1).jpg
+wwwroot\uploads\6e57f996-2e2d-4a5c-b13d-639b85770aa1_download (74).jpg
+wwwroot\uploads\74edbe84-273f-4a7d-a499-2062b97ff55c.jpg
+wwwroot\uploads\7fe79eff-9278-439d-919c-62afecaef153_villa3.jpg
+wwwroot\uploads\9296d83a-d0f5-4617-b0b8-7779795f85be_سيد سيجي.jpg
+wwwroot\uploads\afcce465-9aea-484f-8bd1-8e0bf105675a_download (74).jpg
+wwwroot\uploads\c030d66e-53c9-4be5-aea9-e56ae1b4c9d7_download (74).jpg
+wwwroot\uploads\d727f830-70d1-4b6f-b56f-82ce737e3216_Gta (1).jpg
+wwwroot\uploads\d902dc71-25f6-48ca-aedb-bc36e3892394_Home2.jpg
+wwwroot\uploads\e460b38e-6977-4380-a1e0-2e64c3853eba_CJ and the Impala_ The Legacy of Grove Street.jpg
+wwwroot\uploads\elite.jpg
+wwwroot\uploads\f31941a2-42a2-4fae-8951-7ffbe192464a_villa.jpg
+wwwroot\uploads\villa.jpg
+wwwroot\uploads\Villa2.jpg
+wwwroot\uploads\villa3.jpg

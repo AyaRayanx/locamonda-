@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -30,6 +30,8 @@ namespace locamonda.Models
         [Required]
         [DataType(DataType.DateTime)]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        public string? ProfilePicture { get; set; } //  لتخزين اسم الصورة
 
         /* Navigation Properties */
         public virtual ICollection<Property> Properties { get; set; } = new List<Property>();

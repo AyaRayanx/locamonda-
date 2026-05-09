@@ -19,10 +19,61 @@ namespace locamonda.Controllers
             _userManager = userManager;
         }
 
-        // ─── Index (My Bookings) ───────────────
+        // ───────── NOTIFICATION HELPER ─────────
+        private async Task AddNotification(int userId, string type, string message)
+        {
+            var notification = new Notification
+            {
+                UserId = userId,
+                Type = type,
+                NotificationMessage = message,
+                CreatedAt = DateTime.Now,
+                IsRead = false
+            };
 
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+        }
+
+        // ───────── AUTO CANCEL ─────────
+        private async Task AutoCancelExpiredBookings()
+        {
+            var expired = await _context.Bookings
+                .Include(b => b.Property)
+                .Where(b =>
+                    b.Status == "Confirmed" &&
+                    b.IsDone == false &&
+                    b.ConfirmedAt != null &&
+                    b.ConfirmedAt <= DateTime.Now.AddDays(-3))
+                .ToListAsync();
+
+            foreach (var b in expired)
+            {
+                b.Status = "Cancelled";
+
+                // notify USER
+                await AddNotification(
+                    b.UserId,
+                    "BookingCancelled",
+                    "Your booking was automatically cancelled due to inactivity"
+                );
+
+                // notify OWNER
+                await AddNotification(
+                    b.Property.OwnerId,
+                    "BookingCancelled",
+                    "A confirmed booking was automatically cancelled"
+                );
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        // ───────── USER BOOKINGS ─────────
         public async Task<IActionResult> Index()
         {
+            await AutoCancelExpiredBookings();
+
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();
 
@@ -37,8 +88,7 @@ namespace locamonda.Controllers
             return View(bookings);
         }
 
-        // ─── Create GET ────────────────────────
-
+        // ───────── CREATE GET ─────────
         public async Task<IActionResult> Create(int propertyId)
         {
             var property = await _context.Properties.FindAsync(propertyId);
@@ -48,72 +98,75 @@ namespace locamonda.Controllers
             return View();
         }
 
-        // ─── Create POST ───────────────────────
-
+        // ───────── CREATE POST ─────────
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Booking booking)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var user = await _userManager.GetUserAsync(User);
-                if (user == null) return Challenge();
-
-                if (booking.EndDate <= booking.StartDate)
-                {
-                    ViewBag.Error = "End date must be after start date";
-                    ViewBag.Property = await _context.Properties.FindAsync(booking.PropertyId);
-                    return View(booking);
-                }
-
-                booking.UserId = user.Id;
-                booking.Status = "Pending";
-                booking.CreatedAt = DateTime.Now;
-
-                _context.Bookings.Add(booking);
-
-                var property = await _context.Properties
-                    .FirstOrDefaultAsync(p => p.PropertyId == booking.PropertyId);
-
-                if (property != null)
-                {
-                    _context.Notifications.Add(new Notification
-                    {
-                        UserId = property.OwnerId,
-                        Type = "NewBooking",
-                        NotificationMessage = $"You have a new booking request for: {property.Title}",
-                        CreatedAt = DateTime.Now
-                    });
-                }
-
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                ViewBag.Property = await _context.Properties.FindAsync(booking.PropertyId);
+                return View(booking);
             }
 
-            ViewBag.Property = await _context.Properties.FindAsync(booking.PropertyId);
-            return View(booking);
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
+
+            if (booking.EndDate <= booking.StartDate)
+            {
+                ViewBag.Error = "Invalid dates";
+                return View(booking);
+            }
+
+            var property = await _context.Properties.FindAsync(booking.PropertyId);
+
+            booking.UserId = user.Id;
+            booking.Status = "Pending";
+            booking.CreatedAt = DateTime.Now;
+            booking.IsDone = false;
+
+            _context.Bookings.Add(booking);
+            await _context.SaveChangesAsync();
+
+            if (property == null) return NotFound();
+
+            // NOTIFY OWNER
+            await AddNotification(
+                property.OwnerId,
+                "NewBooking",
+                $"New booking request for your property '{property.Title}'"
+            );
+
+            return RedirectToAction(nameof(Index));
         }
 
-        // ─── Cancel ────────────────────────────
-
+        // ───────── USER CANCEL ─────────
         public async Task<IActionResult> Cancel(int id)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();
 
             var booking = await _context.Bookings
+                .Include(b => b.Property)
                 .FirstOrDefaultAsync(b => b.BookingId == id && b.UserId == user.Id);
 
             if (booking == null) return NotFound();
 
             booking.Status = "Cancelled";
+
             await _context.SaveChangesAsync();
+
+            // NOTIFY OWNER
+            await AddNotification(
+                booking.Property.OwnerId,
+                "BookingCancelled",
+                "A user cancelled a booking request"
+            );
 
             return RedirectToAction(nameof(Index));
         }
 
-        // ─── Confirm (Owner) ───────────────────
-
+        // ───────── OWNER CONFIRM ─────────
         [Authorize(Roles = "Owner")]
         public async Task<IActionResult> Confirm(int id)
         {
@@ -122,34 +175,94 @@ namespace locamonda.Controllers
 
             var booking = await _context.Bookings
                 .Include(b => b.Property)
-                .FirstOrDefaultAsync(b => b.BookingId == id && b.Property.OwnerId == user.Id);
+                .FirstOrDefaultAsync(b =>
+                    b.BookingId == id &&
+                    b.Property.OwnerId == user.Id);
 
             if (booking == null) return NotFound();
 
             booking.Status = "Confirmed";
-
-            _context.Notifications.Add(new Notification
-            {
-                UserId = booking.UserId,
-                Type = "BookingConfirmed",
-                NotificationMessage = $"Your booking for {booking.Property.Title} is confirmed!",
-                CreatedAt = DateTime.Now
-            });
+            booking.ConfirmedAt = DateTime.Now;
 
             await _context.SaveChangesAsync();
+
+            // NOTIFY USER
+            await AddNotification(
+                booking.UserId,
+                "BookingConfirmed",
+                "Your booking has been confirmed"
+            );
+
             return RedirectToAction(nameof(OwnerBookings));
         }
 
-        // ─── Owner Bookings ────────────────────
+        // ───────── OWNER REJECT ─────────
+        [Authorize(Roles = "Owner")]
+        public async Task<IActionResult> Reject(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
+            var booking = await _context.Bookings
+                .Include(b => b.Property)
+                .FirstOrDefaultAsync(b =>
+                    b.BookingId == id &&
+                    b.Property.OwnerId == user.Id);
+
+            if (booking == null) return NotFound();
+
+            booking.Status = "NotAvailable";
+
+            await _context.SaveChangesAsync();
+
+            // NOTIFY USER
+            await AddNotification(
+                booking.UserId,
+                "BookingCancelled",
+                "Your booking request was rejected"
+            );
+
+            return RedirectToAction(nameof(OwnerBookings));
+        }
+
+        // ───────── OWNER DONE ─────────
+        [Authorize(Roles = "Owner")]
+        public async Task<IActionResult> MarkAsDone(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
+
+            var booking = await _context.Bookings
+                .Include(b => b.Property)
+                .FirstOrDefaultAsync(b =>
+                    b.BookingId == id &&
+                    b.Property.OwnerId == user.Id);
+
+            if (booking == null) return NotFound();
+
+            booking.IsDone = true;
+
+            await _context.SaveChangesAsync();
+
+            // NOTIFY BOTH
+            await AddNotification(booking.UserId, "BookingCompleted", "Your booking is completed");
+            await AddNotification(booking.Property.OwnerId, "BookingCompleted", "A booking was marked as completed");
+
+            return RedirectToAction(nameof(OwnerBookings));
+        }
+
+        // ───────── OWNER VIEW ─────────
         [Authorize(Roles = "Owner")]
         public async Task<IActionResult> OwnerBookings()
         {
+            await AutoCancelExpiredBookings();
+
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();
 
             var bookings = await _context.Bookings
                 .Include(b => b.Property)
+                .ThenInclude(p => p.Photos)
                 .Include(b => b.User)
                 .Where(b => b.Property.OwnerId == user.Id)
                 .ToListAsync();

@@ -1,9 +1,11 @@
-using locamonda.Models;
 using locamonda.Data;
+using locamonda.Models;
 using locamonda.Models.ViewModels;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 
 namespace locamonda.Controllers
 {
@@ -12,15 +14,17 @@ namespace locamonda.Controllers
         private readonly UserManager<Users> _userManager;
         private readonly SignInManager<Users> _signInManager;
         private readonly AppDbContext _context;
-
+        private readonly IWebHostEnvironment _webHostEnvironment;
         public UsersController(
             UserManager<Users> userManager,
             SignInManager<Users> signInManager,
-            AppDbContext context)
+            AppDbContext context,
+            IWebHostEnvironment webHostEnvironment)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         // ─── Register ───────────────────────────────────────────
@@ -59,7 +63,7 @@ namespace locamonda.Controllers
                     await _userManager.AddToRoleAsync(user, model.AccountType);
                     
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction("Index", "Property");
+                    return RedirectToAction("Profile", "Users");
                 }
 
                 foreach (var error in result.Errors)
@@ -94,7 +98,7 @@ namespace locamonda.Controllers
 
                 if (result.Succeeded)
                 {
-                    return RedirectToAction("Index", "Property");
+                    return RedirectToAction("Profile", "Users");
                 }
 
                 ModelState.AddModelError(string.Empty, "Invalid login attempt.");
@@ -119,35 +123,66 @@ namespace locamonda.Controllers
             if (user == null)
                 return RedirectToAction("Login");
 
+            ViewData["HideBooking"] = true;
+
             return View(user);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Profile(Users updatedUser)
+        public async Task<IActionResult> Profile(Users updatedUser, IFormFile? profileImage)
         {
+
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
                 return RedirectToAction("Login");
-
-            // Only update allowed fields
-            user.Name = updatedUser.Name;
-            user.PhoneNumber = updatedUser.PhoneNumber;
-            user.Address = updatedUser.Address;
-            user.Age = updatedUser.Age;
-
-            var result = await _userManager.UpdateAsync(user);
-
-            if (result.Succeeded)
+            if (ModelState.IsValid)
             {
-                ViewBag.Message = "Profile updated successfully";
-                return View(user);
-            }
+                // 1. معالجة رفع الصورة لو موجودة
+                if (profileImage != null && profileImage.Length > 0)
+                {
+                    // تحديد مسار الفولدر
+                    string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
 
-            foreach (var error in result.Errors)
-            {
-                ModelState.AddModelError(string.Empty, error.Description);
-            }
+                    // التأكد إن الفولدر موجود
+                    if (!Directory.Exists(uploadsFolder))
+                        Directory.CreateDirectory(uploadsFolder);
 
+                    // توليد اسم فريد للصورة
+                    string uniqueFileName = Guid.NewGuid().ToString() + "_" + profileImage.FileName;
+                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    // حفظ الملف فعلياً
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await profileImage.CopyToAsync(fileStream);
+                    }
+
+                    // تحديث اسم الصورة في الموديل (الخاصية اللي زودناها)
+                    user.ProfilePicture = uniqueFileName;
+                }
+                // Only update allowed fields
+                user.Name = updatedUser.Name;
+                user.PhoneNumber = updatedUser.PhoneNumber;
+                user.Address = updatedUser.Address;
+                user.Age = updatedUser.Age;
+
+                var result = await _userManager.UpdateAsync(user);
+
+                if (result.Succeeded)
+                {
+                    ViewBag.Message = "Profile updated successfully";
+                    return View(user);
+                }
+
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+
+               
+            }
+            // عشان اخفي زرار الحجز
+            ViewData["HideBooking"] = true;
             return View(user);
         }
     }

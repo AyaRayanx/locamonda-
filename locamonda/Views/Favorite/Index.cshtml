@@ -1,0 +1,92 @@
+﻿@model IEnumerable<locamonda.Models.Favorite>
+
+@{
+    ViewData["Title"] = "My Favorites";
+}
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<div class="bg-slate-50 min-h-screen py-12 px-6 font-sans">
+    <div class="max-w-7xl mx-auto">
+
+        <div class="flex flex-col md:flex-row justify-between items-end mb-10 gap-6 border-b border-slate-200 pb-6">
+            <div>
+                <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight">Favorite Properties</h1>
+                <p class="text-slate-500 mt-2 text-lg">The properties you've saved for later.</p>
+            </div>
+            <div class="bg-white px-6 py-2 rounded-full border border-slate-200 shadow-sm">
+                <span class="text-slate-900 font-bold">@Model.Count()</span>
+                <span class="text-slate-500 ml-1">Items Saved</span>
+            </div>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
+                <div class="inline-flex items-center justify-center w-20 h-20 bg-slate-100 rounded-full mb-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-slate-800">Your list is empty</h3>
+                <p class="text-slate-500 mt-2">Browse properties and click the heart icon to save them here.</p>
+                <a href="/Property/Index" class="inline-block mt-8 bg-slate-800 hover:bg-slate-700 text-white px-8 py-3 rounded-xl font-bold transition-all">
+                    Explore Properties
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                @foreach (var item in Model)
+                {
+                    <div class="bg-white rounded-3xl overflow-hidden shadow-xl shadow-slate-200 border border-slate-100 hover:shadow-2xl hover:shadow-slate-300 transition-all duration-300 transform hover:-translate-y-2">
+
+                        <div class="relative h-64 bg-slate-200">
+                            @if (item.Property.Photos != null && item.Property.Photos.Any())
+                            {
+                                <img src="@item.Property.Photos.FirstOrDefault().PhotoUrl" class="w-full h-full object-cover" alt="Property">
+                            }
+                            else
+                            {
+                                <div class="flex items-center justify-center h-full text-slate-400 italic">No Image Available</div>
+                            }
+                            <div class="absolute top-4 right-4">
+                                <span class="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-slate-800 shadow-sm">
+                                    Saved at @item.SavedAt.ToShortDateString()
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="p-6">
+                            <h2 class="text-xl font-bold text-slate-900 mb-2 truncate">@item.Property.Title</h2>
+                            <div class="flex items-center gap-2 text-slate-500 mb-4 text-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                </svg>
+                                @item.Property.Location?.City
+                            </div>
+
+                            <div class="text-2xl font-black text-slate-800 mb-6">
+                                <span class="text-sm font-normal text-slate-400 mr-1">EGP</span>@item.Property.Price.ToString("N0")
+                            </div>
+
+                            <div class="flex gap-3">
+                                <a href="/Property/Details/@item.PropertyId" class="flex-1 text-center py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors">
+                                    View Details
+                                </a>
+                                <a href="/Favorite/Remove?favoriteId=@item.FavoriteId"
+                                   onclick="return confirm('Remove this from your favorites?')"
+                                   class="p-3 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-600 hover:text-white transition-all border border-rose-100">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

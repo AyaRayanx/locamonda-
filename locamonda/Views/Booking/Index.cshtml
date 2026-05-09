@@ -1,0 +1,140 @@
+﻿@model IEnumerable<locamonda.Models.Booking>
+@{
+    ViewData["Title"] = "My Bookings";
+}
+
+<div class="min-h-screen bg-[#F8F9FB] py-12 px-4 md:px-10">
+    @* Header Section *@
+    <div class="max-w-5xl mx-auto mb-10">
+        <h1 class="text-3xl font-bold text-[#1A1D2E]">All bookings</h1>
+        <p class="text-sm text-slate-400 font-medium tracking-widest uppercase">LOCA MONDA</p>
+    </div>
+
+    <div class="max-w-5xl mx-auto space-y-6">
+        @* التعديل 1: فلترة الموديل لعرض الحجوزات النشطة فقط *@
+        @{
+            var activeBookings = Model?.Where(b => b.Status != "Cancelled") ?? Enumerable.Empty<locamonda.Models.Booking>();
+        }
+
+        @if (activeBookings.Any())
+        {
+            @foreach (var booking in activeBookings)
+            {
+                @* Booking Card *@
+                <div class="bg-white rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 flex flex-col md:flex-row gap-8 items-center transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] group">
+
+                    @* Property Image *@
+                    <div class="w-full md:w-64 h-44 flex-shrink-0 overflow-hidden rounded-[1.5rem] bg-gray-100 relative">
+                        @if (booking.Property?.Photos != null && booking.Property.Photos.Any())
+                        {
+                            <img src="@Url.Content("~/uploads/" + booking.Property.Photos.First().PhotoUrl)"
+                                 class="w-full h-full object-cover transition duration-700 group-hover:scale-110"
+                                 alt="@booking.Property.Title" />
+                        }
+                        else
+                        {
+                            <div class="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-2">
+                                <i class="fas fa-house-chimney text-4xl"></i>
+                                <span class="text-xs font-medium">No Image Found</span>
+                            </div>
+                        }
+                    </div>
+
+                    @* Details Section *@
+                    <div class="flex-1 w-full">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-2xl font-extrabold text-[#1A1D2E] mb-2">
+                                    @booking.Property?.Title
+                                    <span class="mx-2 text-gray-200 font-light">|</span>
+                                    <span class="text-blue-500 font-semibold text-base">@booking.Property?.Category?.Name</span>
+                                </h3>
+
+                                @* Property Specs *@
+                                <div class="flex gap-6 text-sm text-slate-500">
+                                    <span class="flex items-center gap-2">
+                                        <i class="fas fa-bed"></i> @booking.Property?.Rooms Beds
+                                    </span>
+                                    <span class="flex items-center gap-2">
+                                        <i class="fas fa-bath"></i> @booking.Property?.Bathrooms Baths
+                                    </span>
+                                </div>
+                            </div>
+
+                            @* Actions Menu *@
+                            <div class="relative group/menu">
+                                <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-50 text-gray-400 transition-colors">
+                                    <i class="fas fa-ellipsis-vertical text-lg"></i>
+                                </button>
+                                <div class="absolute right-0 top-10 hidden group-hover/menu:block bg-white shadow-2xl border border-gray-100 rounded-2xl w-48 py-3 z-20">
+                                    <a asp-controller="Property" asp-action="Details" asp-route-id="@booking.PropertyId" class="flex items-center gap-3 px-5 py-2.5 text-sm text-slate-950 hover:bg-slate-50 transition-colors">
+                                        <i class="far fa-eye text-slate-950"></i> View Details
+                                    </a>
+                                    @* التعديل 2: إظهار زر الإلغاء فقط لو الحجز لسه Pending ولم يكتمل *@
+                                    @if (string.Equals(booking.Status, "Pending", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <div class="h-px bg-gray-50 my-1"></div>
+                                        <a asp-controller="Booking" asp-action="Cancel" asp-route-id="@booking.BookingId" class="flex items-center gap-3 px-5 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors" onclick="return confirm('Are you sure you want to cancel?')">
+                                            <i class="far fa-circle-xmark"></i> Cancel Booking
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap justify-between items-center pt-4 border-t border-gray-50">
+                            <div>
+                                <p class="text-3xl font-black text-[#1A1D2E] tracking-tight">$@booking.TotalPrice.ToString("N0")</p>
+                                <div class="mt-2">
+                                    @* التعديل 3: تحديث Badge الحالة بناءً على منطق الـ IsDone الجديد *@
+                                    @{
+                                        var badgeClass = booking.IsDone ? "bg-blue-50 text-blue-600 border-blue-100" :
+                                        booking.Status == "Confirmed" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
+                                        "bg-amber-50 text-amber-600 border-amber-100";
+
+                                        var dotClass = booking.IsDone ? "bg-blue-500" :
+                                        booking.Status == "Confirmed" ? "bg-emerald-500" : "bg-amber-500";
+
+                                        var statusText = booking.IsDone ? "Completed" : booking.Status;
+                                    }
+                                    <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest border @badgeClass">
+                                        <span class="w-1.5 h-1.5 rounded-full @dotClass"></span>
+                                        @statusText
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[11px] text-gray-400 font-bold uppercase tracking-tighter mb-1">Reservation Date</p>
+                                <p class="text-sm text-slate-700 font-semibold">@booking.CreatedAt.ToString("MMM dd, yyyy")</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="bg-white rounded-[2.5rem] p-24 text-center border-2 border-dashed border-gray-100">
+                <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-200">
+                    <i class="fas fa-calendar-xmark text-4xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 mb-2">No active bookings</h3>
+                <p class="text-slate-400 mb-8 max-w-xs mx-auto">It looks like you don't have any upcoming reservations at the moment.</p>
+                <a href="/" class="inline-flex items-center gap-2 px-8 py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-blue-600 transition-all shadow-lg shadow-slate-200">
+                    Browse Properties <i class="fas fa-arrow-right text-xs"></i>
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        @@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
+}

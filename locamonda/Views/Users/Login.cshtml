@@ -1,46 +1,67 @@
-@model LoginViewModel
+
+@model locamonda.Models.ViewModels.LoginViewModel
 @{
-    ViewData["Title"] = "Sign In";
+    ViewData["Title"] = "Login";
 }
 
-<div class="auth-container">
-    <div class="auth-card">
-        <div class="auth-header">
-            <h1>Welcome Back</h1>
-            <p>Please sign in to continue</p>
+<div class="min-h-[80vh] flex items-center justify-center py-12 px-4 bg-gray-50">
+    <div class="max-w-5xl w-full flex flex-col md:flex-row items-center gap-12 bg-white p-24 rounded-3xl shadow-xl">
+
+        <div class="w-full md:w-1/2 space-y-8">
+            <div>
+                <h2 class="font-extrabold text-zinc-700"><span class="text-slate-950">Loca</span>Monda</h2>
+                <h2 class="text-3xl font-extrabold text-gray-900">Welcome Back</h2>
+                <p class="text-gray-500">Let's login TO find your Home!</p>
+                <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm mt-2"></div>
+            </div>
+
+            @if (ViewBag.Error != null)
+            {
+                <div class="p-3 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
+                    @ViewBag.Error
+                </div>
+            }
+
+            <form asp-controller="Users" asp-action="Login" method="POST" class="space-y-6">
+                
+                @* <input type="hidden" name="ReturnUrl" value="@Context.Request.Query["ReturnUrl"]" /> *@
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Email Address</label>
+                    <input type="email" asp-for="Email" class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-slate-400 outline-none" placeholder="Enter Your Email">
+                    <span asp-validation-for="Email" class="text-red-500 text-xs"></span>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" asp-for="Password" class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-slate-400 outline-none" placeholder="••••••••">
+                    <span asp-validation-for="Password" class="text-red-500 text-xs"></span>
+                </div>
+
+                <button type="submit" class="w-full py-3 px-4 rounded-xl text-white bg-slate-800 hover:bg-slate-900 transition">
+                    Login
+                </button>
+
+                <p class="text-center text-sm text-gray-600">
+                    Don't have an account?
+                    <a asp-controller="Users" asp-action="Register"
+                       class="font-semibold text-slate-800 hover:text-slate-800 underline underline-offset-4 transition-colors">
+                        SIGN UP
+                    </a>
+                </p>
+            </form>
         </div>
 
-        <form asp-action="Login" method="post" class="auth-form">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-            <div class="form-group">
-                <label asp-for="Email"></label>
-                <input asp-for="Email" class="form-control" placeholder="example@email.com" />
-                <span asp-validation-for="Email" class="text-danger"></span>
+        <div class="hidden md:block w-1/2 relative h-[500px]">
+            <div class="absolute inset-0 bg-gray-100 rounded-[4rem] overflow-hidden" style="border-top-left-radius: 10rem; border-bottom-right-radius: 5rem;">
+                <img src="~/images/Ris_login.jpg" class="w-full h-full object-cover">
             </div>
-
-            <div class="form-group">
-                <label asp-for="Password"></label>
-                <input asp-for="Password" class="form-control" placeholder="••••••••" />
-                <span asp-validation-for="Password" class="text-danger"></span>
-            </div>
-
-            <div class="form-options">
-                <label class="remember-me">
-                    <input asp-for="RememberMe" /> @Html.DisplayNameFor(m => m.RememberMe)
-                </label>
-                <a href="#" class="forgot-password">Forgot password?</a>
-            </div>
-
-            <button type="submit" class="btn-primary">Sign In</button>
-        </form>
-
-        <div class="auth-footer">
-            <p>Don't have an account? <a asp-action="Register">Create Account</a></p>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

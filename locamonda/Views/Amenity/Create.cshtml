@@ -1,0 +1,59 @@
+﻿@model locamonda.Models.Amenity
+
+@{
+    ViewData["Title"] = "إضافة ميزة جديدة";
+}
+
+<div class="min-h-screen bg-slate-50 py-12 px-4">
+    <div class="max-w-2xl mx-auto">
+        <div class="mb-8 text-center">
+            <h1 class="text-3xl font-black text-slate-900">إضافة ميزة جديدة</h1>
+            <p class="mt-2 text-slate-500 font-medium">قم بإضافة مرافق أو خدمات جديدة لقاموس الموقع</p>
+        </div>
+
+        <div class="bg-white rounded-[2.5rem] shadow-xl p-8 sm:p-10 border border-slate-100">
+            <form asp-action="Create" method="post" class="space-y-8">
+                <div asp-validation-summary="ModelOnly" class="text-rose-500 text-sm font-bold"></div>
+
+                <div class="space-y-2">
+                    <label asp-for="Name" class="block text-sm font-black text-slate-700 uppercase tracking-wider ml-1">اسم الميزة</label>
+                    <input asp-for="Name"
+                           class="block w-full px-4 py-4 bg-slate-50 border-none rounded-2xl text-slate-900 font-semibold focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm"
+                           placeholder="مثلاً: واي فاي، حمام سباحة" />
+                    <span asp-validation-for="Name" class="text-rose-500 text-xs font-bold ml-1"></span>
+                </div>
+
+                <div class="space-y-2">
+                    <label asp-for="Icon" class="block text-sm font-black text-slate-700 uppercase tracking-wider ml-1">اختر الأيقونة</label>
+                    <select asp-for="Icon" class="block w-full px-4 py-4 bg-slate-50 border-none rounded-2xl text-slate-900 font-semibold focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm">
+                        <option value="">-- اختر أيقونة مناسبة --</option>
+                        <option value="fas fa-wifi">موجات واي فاي (WiFi)</option>
+                        <option value="fas fa-swimming-pool">حمام سباحة (Pool)</option>
+                        <option value="fas fa-parking">موقف سيارات (Parking)</option>
+                        <option value="fas fa-snowflake">تكييف (AC)</option>
+                        <option value="fas fa-dumbbell">جيم (Gym)</option>
+                        <option value="fas fa-leaf">حديقة (Garden)</option>
+                        <option value="fas fa-elevator">مصعد (Elevator)</option>
+                    </select>
+                    <p class="text-[10px] text-slate-400 font-medium ml-1">هذه الأيقونات تظهر بجانب اسم الميزة في صفحة العقار.</p>
+                    <span asp-validation-for="Icon" class="text-rose-500 text-xs font-bold ml-1"></span>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-center gap-4 pt-4">
+                    <button type="submit" class="w-full sm:flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 px-8 rounded-2xl shadow-lg transition-all transform hover:scale-[1.02] active:scale-95">
+                        حفظ الميزة
+                    </button>
+                    <a asp-action="Index" class="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-4 px-8 rounded-2xl transition-all text-center">
+                        إلغاء
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

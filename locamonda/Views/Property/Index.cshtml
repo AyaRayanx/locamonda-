@@ -1,0 +1,169 @@
+﻿@model List<locamonda.Models.Property>
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<locamonda.Models.Users> UserManager
+@inject locamonda.Data.AppDbContext _context
+
+@{
+    ViewData["Title"] = "Properties";
+    var currentCity = ViewContext.HttpContext.Request.Query["city"].ToString();
+
+    // جلب المفضلات للمستخدم الحالي
+    var user = await UserManager.GetUserAsync(User);
+    var favoritePropertyIds = new List<int>();
+    if (user != null)
+    {
+        favoritePropertyIds = _context.Favorites
+            .Where(f => f.UserId == user.Id)
+            .Select(f => f.PropertyId)
+            .ToList();
+    }
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen w-full overflow-x-hidden font-sans">
+
+    @*AntiForgeryToken للحماية (مهم جداً عشان الـ AJAX يشتغل) *@
+    @Html.AntiForgeryToken()
+
+    <div class="text-center mb-10 my-10 px-4">
+        <h1 class="text-4xl font-extrabold text-slate-900 mb-2 tracking-tight">Explore Properties</h1>
+        <p class="text-slate-500 text-lg">Discover the latest listings and find your perfect place</p>
+    </div>
+
+    <div class="px-4 py-6 max-w-7xl mx-auto">
+        <div class="flex gap-8 border-b border-slate-200 w-full overflow-x-auto no-scrollbar">
+            @{
+                var cities = new[] { "", "Cairo", "Alexandria", "Giza", "Assiut" };
+                foreach (var city in cities)
+                {
+                    bool isActive = (currentCity == city);
+                    <a asp-action="Index" asp-route-city="@city"
+                       class="relative pb-3 text-lg transition-all duration-300 @(isActive ? "text-slate-900 font-bold border-b-2 border-slate-900" : "text-slate-400 hover:text-slate-600")">
+                        @(string.IsNullOrEmpty(city) ? "All" : city)
+                    </a>
+                }
+            }
+        </div>
+    </div>
+
+    <div class="bg-slate-50 min-h-[400px] max-w-7xl mx-auto px-4 py-6" dir="ltr">
+        @if (!Model.Any())
+        {
+
+            <div class="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
+                <div class="bg-slate-50 p-8 rounded-full mb-6">
+                    <svg class="w-20 h-20 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-slate-800 mb-2">No Properties Found</h3>
+                <p class="text-slate-500 text-center max-w-xs">
+                    We couldn't find any properties in <span class="font-bold text-slate-900">@(string.IsNullOrEmpty(currentCity) ? "this category" : currentCity)</span>.
+                </p>
+                <a asp-action="Index" asp-route-city="" class="mt-6 text-slate-900 hover:underline font-bold">
+                    View all properties instead →
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                @foreach (var item in Model)
+                {
+                    bool isFav = favoritePropertyIds.Contains(item.PropertyId);
+
+                    <div class="relative h-[550px] rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-200 group w-full border border-white">
+
+                        <img src="@(item.Photos.FirstOrDefault()?.PhotoUrl ?? "/images/property/prop1.jpg")"
+                             class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                             alt="@item.Title">
+
+                        <div class="absolute top-6 right-6 z-30">
+                            <button onclick="toggleFavorite(event, @item.PropertyId, this)"
+                                    class="w-12 h-12 @(isFav ? "bg-white" : "bg-white/20") backdrop-blur-md rounded-full flex items-center justify-center transition-all duration-300 border border-white/30 shadow-xl active:scale-90">
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                     class="heart-icon h-6 w-6 transition-all duration-300 @(isFav ? "text-rose-500 fill-rose-500" : "text-white fill-none")"
+                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/20 to-transparent"></div>
+
+                        <div class="absolute inset-x-0 bottom-0 p-8 text-white">
+                            <h2 class="text-2xl font-bold mb-1 tracking-tight">@item.Title</h2>
+                            <p class="text-slate-300 mb-4 flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /></svg>
+                                @item.Location?.City
+                            </p>
+
+                            <div class="flex gap-4 text-sm mb-6 bg-white/10 backdrop-blur-sm w-fit px-4 py-2 rounded-full border border-white/10">
+                                <span class="flex items-center gap-1">🛏️ @item.Rooms</span>
+                                <span class="flex items-center gap-1">🚿 @item.Bathrooms</span>
+                            </div>
+
+                            <div class="flex items-center justify-between gap-4">
+                                <p class="text-2xl font-black italic">@item.Price.ToString("N0") <span class="text-xs font-normal">EGP</span></p>
+                                <a asp-controller="Property" asp-action="Details" asp-route-id="@item.PropertyId"
+                                   class="px-6 py-3 bg-white text-slate-900 font-bold rounded-2xl transition-all hover:bg-slate-200 active:scale-95 shadow-lg">
+                                    View details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <script>
+        function toggleFavorite(event, propertyId, btn) {
+        event.preventDefault();
+        const icon = btn.querySelector('.heart-icon');
+        const isAdding = icon.classList.contains('fill-none'); // لو مفرغ يبقى بنضيف
+
+        // نجلب التوكن من الصفحة
+        const tokenElement = document.querySelector('input[name="__RequestVerificationToken"]');
+        const token = tokenElement ? tokenElement.value : '';
+
+        // اختيار الأكشن المناسب
+        const url = isAdding ? '/Favorite/Add' : '/Favorite/RemoveByProperty';
+
+        fetch(url, {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'RequestVerificationToken': token
+        },
+        body: `propertyId=${propertyId}`
+        })
+        .then(response => {
+        if (response.ok) {
+        if (isAdding) {
+        // تحويل للأحمر المليان
+        icon.classList.remove('text-white', 'fill-none');
+        icon.classList.add('text-rose-500', 'fill-rose-500');
+        btn.classList.remove('bg-white/20');
+        btn.classList.add('bg-white');
+        } else {
+        // رجوعه مفرغ أبيض
+        icon.classList.remove('text-rose-500', 'fill-rose-500');
+        icon.classList.add('text-white', 'fill-none');
+        btn.classList.remove('bg-white');
+        btn.classList.add('bg-white/20');
+        }
+        } else {
+        console.error("Failed to toggle favorite");
+        }
+        })
+        .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>

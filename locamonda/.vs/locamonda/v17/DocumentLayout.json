@@ -1,18 +1,37 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\Amir Elfoly\\Downloads\\My-Github\\locamonda-\\locamonda\\",
+  "WorkspaceRootPath": "C:\\Users\\Admin\\Documents\\Locamonda_T_copy\\locamonda-\\locamonda\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{2B4F466B-E4EE-408C-83CC-736C66A957B4}|locamonda.csproj|c:\\users\\amir elfoly\\downloads\\my-github\\locamonda-\\locamonda\\models\\users.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2B4F466B-E4EE-408C-83CC-736C66A957B4}|locamonda.csproj|solutionrelative:models\\users.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{2B4F466B-E4EE-408C-83CC-736C66A957B4}|locamonda.csproj|c:\\users\\admin\\documents\\locamonda_t_copy\\locamonda-\\locamonda\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{2B4F466B-E4EE-408C-83CC-736C66A957B4}|locamonda.csproj|solutionrelative:views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{2B4F466B-E4EE-408C-83CC-736C66A957B4}|locamonda.csproj|c:\\users\\amir elfoly\\downloads\\my-github\\locamonda-\\locamonda\\models\\realestate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2B4F466B-E4EE-408C-83CC-736C66A957B4}|locamonda.csproj|solutionrelative:models\\realestate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{2B4F466B-E4EE-408C-83CC-736C66A957B4}|locamonda.csproj|c:\\users\\admin\\documents\\locamonda_t_copy\\locamonda-\\locamonda\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2B4F466B-E4EE-408C-83CC-736C66A957B4}|locamonda.csproj|solutionrelative:controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{2B4F466B-E4EE-408C-83CC-736C66A957B4}|locamonda.csproj|c:\\users\\amir elfoly\\downloads\\my-github\\locamonda-\\locamonda\\models\\errorviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2B4F466B-E4EE-408C-83CC-736C66A957B4}|locamonda.csproj|solutionrelative:models\\errorviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{2B4F466B-E4EE-408C-83CC-736C66A957B4}|locamonda.csproj|c:\\users\\admin\\documents\\locamonda_t_copy\\locamonda-\\locamonda\\controllers\\propertycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2B4F466B-E4EE-408C-83CC-736C66A957B4}|locamonda.csproj|solutionrelative:controllers\\propertycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2B4F466B-E4EE-408C-83CC-736C66A957B4}|locamonda.csproj|c:\\users\\admin\\documents\\locamonda_t_copy\\locamonda-\\locamonda\\views\\booking\\ownerbookings.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{2B4F466B-E4EE-408C-83CC-736C66A957B4}|locamonda.csproj|solutionrelative:views\\booking\\ownerbookings.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2B4F466B-E4EE-408C-83CC-736C66A957B4}|locamonda.csproj|c:\\users\\admin\\documents\\locamonda_t_copy\\locamonda-\\locamonda\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{2B4F466B-E4EE-408C-83CC-736C66A957B4}|locamonda.csproj|solutionrelative:views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2B4F466B-E4EE-408C-83CC-736C66A957B4}|locamonda.csproj|c:\\users\\admin\\documents\\locamonda_t_copy\\locamonda-\\locamonda\\views\\booking\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{2B4F466B-E4EE-408C-83CC-736C66A957B4}|locamonda.csproj|solutionrelative:views\\booking\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2B4F466B-E4EE-408C-83CC-736C66A957B4}|locamonda.csproj|c:\\users\\admin\\documents\\locamonda_t_copy\\locamonda-\\locamonda\\controllers\\bookingcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2B4F466B-E4EE-408C-83CC-736C66A957B4}|locamonda.csproj|solutionrelative:controllers\\bookingcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/locamonda/True/SqlTable/dbo.Photos.sql||{0058A1F7-65F3-4DB9-B3D0-CA7E64DD73CD}"
     }
   ],
   "DocumentGroupContainers": [
@@ -22,53 +41,116 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{eefa5220-e298-11d0-8f78-00a0c9110057}"
             },
             {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "Users.cs",
-              "DocumentMoniker": "C:\\Users\\Amir Elfoly\\Downloads\\My-Github\\locamonda-\\locamonda\\Models\\Users.cs",
-              "RelativeDocumentMoniker": "Models\\Users.cs",
-              "ToolTip": "C:\\Users\\Amir Elfoly\\Downloads\\My-Github\\locamonda-\\locamonda\\Models\\Users.cs",
-              "RelativeToolTip": "Models\\Users.cs",
-              "ViewState": "AgIAAB4AAAAAAAAAAAAowCYAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-24T18:21:24.368Z",
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\Admin\\Documents\\Locamonda_T_copy\\locamonda-\\locamonda\\Views\\Home\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\Home\\Index.cshtml",
+              "ToolTip": "C:\\Users\\Admin\\Documents\\Locamonda_T_copy\\locamonda-\\locamonda\\Views\\Home\\Index.cshtml",
+              "RelativeToolTip": "Views\\Home\\Index.cshtml",
+              "ViewState": "AgIAAIcAAAAAAAAAAAAAAF8AAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-05-09T18:10:29.687Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "RealEstate.cs",
-              "DocumentMoniker": "C:\\Users\\Amir Elfoly\\Downloads\\My-Github\\locamonda-\\locamonda\\Models\\RealEstate.cs",
-              "RelativeDocumentMoniker": "Models\\RealEstate.cs",
-              "ToolTip": "C:\\Users\\Amir Elfoly\\Downloads\\My-Github\\locamonda-\\locamonda\\Models\\RealEstate.cs",
-              "RelativeToolTip": "Models\\RealEstate.cs",
-              "ViewState": "AgIAADUAAAAAAAAAAADwv1cAAAAAAAAAAAAAAA==",
+              "Title": "HomeController.cs",
+              "DocumentMoniker": "C:\\Users\\Admin\\Documents\\Locamonda_T_copy\\locamonda-\\locamonda\\Controllers\\HomeController.cs",
+              "RelativeDocumentMoniker": "Controllers\\HomeController.cs",
+              "ToolTip": "C:\\Users\\Admin\\Documents\\Locamonda_T_copy\\locamonda-\\locamonda\\Controllers\\HomeController.cs",
+              "RelativeToolTip": "Controllers\\HomeController.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-24T17:00:46.535Z",
+              "WhenOpened": "2026-05-09T18:10:19.236Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "ErrorViewModel.cs",
-              "DocumentMoniker": "C:\\Users\\Amir Elfoly\\Downloads\\My-Github\\locamonda-\\locamonda\\Models\\ErrorViewModel.cs",
-              "RelativeDocumentMoniker": "Models\\ErrorViewModel.cs",
-              "ToolTip": "C:\\Users\\Amir Elfoly\\Downloads\\My-Github\\locamonda-\\locamonda\\Models\\ErrorViewModel.cs",
-              "RelativeToolTip": "Models\\ErrorViewModel.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
+              "Title": "PropertyController.cs",
+              "DocumentMoniker": "C:\\Users\\Admin\\Documents\\Locamonda_T_copy\\locamonda-\\locamonda\\Controllers\\PropertyController.cs",
+              "RelativeDocumentMoniker": "Controllers\\PropertyController.cs",
+              "ToolTip": "C:\\Users\\Admin\\Documents\\Locamonda_T_copy\\locamonda-\\locamonda\\Controllers\\PropertyController.cs",
+              "RelativeToolTip": "Controllers\\PropertyController.cs",
+              "ViewState": "AgIAAF0AAAAAAAAAAAAIwHUAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-24T16:41:25.019Z"
+              "WhenOpened": "2026-05-09T13:55:52.604Z",
+              "EditorCaption": ""
             },
             {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "_Layout.cshtml",
+              "DocumentMoniker": "C:\\Users\\Admin\\Documents\\Locamonda_T_copy\\locamonda-\\locamonda\\Views\\Shared\\_Layout.cshtml",
+              "RelativeDocumentMoniker": "Views\\Shared\\_Layout.cshtml",
+              "ToolTip": "C:\\Users\\Admin\\Documents\\Locamonda_T_copy\\locamonda-\\locamonda\\Views\\Shared\\_Layout.cshtml",
+              "RelativeToolTip": "Views\\Shared\\_Layout.cshtml",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAACQAAACCAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-05-09T13:35:30.969Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "OwnerBookings.cshtml",
+              "DocumentMoniker": "C:\\Users\\Admin\\Documents\\Locamonda_T_copy\\locamonda-\\locamonda\\Views\\Booking\\OwnerBookings.cshtml",
+              "RelativeDocumentMoniker": "Views\\Booking\\OwnerBookings.cshtml",
+              "ToolTip": "C:\\Users\\Admin\\Documents\\Locamonda_T_copy\\locamonda-\\locamonda\\Views\\Booking\\OwnerBookings.cshtml",
+              "RelativeToolTip": "Views\\Booking\\OwnerBookings.cshtml",
+              "ViewState": "AgIAAGAAAAAAAAAAAAAAAGsAAABQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-05-09T11:03:56.01Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "BookingController.cs",
+              "DocumentMoniker": "C:\\Users\\Admin\\Documents\\Locamonda_T_copy\\locamonda-\\locamonda\\Controllers\\BookingController.cs",
+              "RelativeDocumentMoniker": "Controllers\\BookingController.cs",
+              "ToolTip": "C:\\Users\\Admin\\Documents\\Locamonda_T_copy\\locamonda-\\locamonda\\Controllers\\BookingController.cs",
+              "RelativeToolTip": "Controllers\\BookingController.cs",
+              "ViewState": "AgIAANwAAAAAAAAAAAAwwAgBAAArAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-09T10:45:20.831Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\Admin\\Documents\\Locamonda_T_copy\\locamonda-\\locamonda\\Views\\Booking\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\Booking\\Index.cshtml",
+              "ToolTip": "C:\\Users\\Admin\\Documents\\Locamonda_T_copy\\locamonda-\\locamonda\\Views\\Booking\\Index.cshtml",
+              "RelativeToolTip": "Views\\Booking\\Index.cshtml",
+              "ViewState": "AgIAADAAAAAAAAAAAAAAAEYAAABLAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-05-09T10:27:28.395Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "dbo.Photos [Data]",
+              "DocumentMoniker": "ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/locamonda/True/SqlTable/dbo.Photos.sql",
+              "ToolTip": "dbo.Photos [Data]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2026-05-09T11:52:47.214Z",
+              "EditorCaption": ""
             }
           ]
         }

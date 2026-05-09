@@ -21,44 +21,27 @@ namespace locamonda.Controllers
 
         // ─── Create Review ────────────────────────────────────────
 
-        public IActionResult Create(int propertyId)
-        {
-            ViewBag.PropertyId = propertyId;
-            return View();
-        }
+        //public IActionResult Create(int propertyId)
+        //{
+        //    ViewBag.PropertyId = propertyId;
+        //    return View();
+        //}
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Review review)
         {
-            if (ModelState.IsValid)
-            {
-                var user = await _userManager.GetUserAsync(User);
-                if (user == null) return Challenge();
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
-                bool alreadyReviewed = await _context.Reviews
-                    .AnyAsync(r => r.UserId == user.Id && r.PropertyId == review.PropertyId);
+            review.UserId = user.Id;
+            review.CreatedAt = DateTime.Now;
 
-                if (alreadyReviewed)
-                {
-                    ViewBag.Error = "You have already reviewed this property";
-                    ViewBag.PropertyId = review.PropertyId;
-                    return View(review);
-                }
+            _context.Reviews.Add(review);
+            await _context.SaveChangesAsync();
 
-                review.UserId = user.Id;
-                review.CreatedAt = DateTime.Now;
-
-                _context.Reviews.Add(review);
-                await _context.SaveChangesAsync();
-
-                return RedirectToAction("Details", "Property", new { id = review.PropertyId });
-            }
-
-            ViewBag.PropertyId = review.PropertyId;
-            return View(review);
+            return RedirectToAction("Details", "Property", new { id = review.PropertyId });
         }
-
         // ─── Delete Review ────────────────────────────────────────
 
         public async Task<IActionResult> Delete(int id)

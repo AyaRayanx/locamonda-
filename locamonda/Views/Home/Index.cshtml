@@ -1,8 +1,151 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@*                         
+  @{
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- Main Hero Section -->
+<div class="relative min-h-screen w-full flex items-center justify-center px-4 overflow-hidden">
+    
+    <!-- Background Image Layer -->
+    <div class="absolute inset-0 z-0">
+        <img src="/images/building-bg.jpg" 
+             alt="Background" 
+             class="w-full h-full object-cover object-center" /> 
+        <!-- object-cover هنا بتخلي الصورة تملا كل المساحة المتاحة -->
+        <div class="absolute inset-0 bg-black/40"></div> <!-- تغميق خفيف للخلفية عشان الكلام ينطق -->
+    </div>
+
+    <!-- Content Wrapper -->
+    <div class="relative z-10 w-full max-w-6xl text-center">
+
+        <!-- Logo/Brand Name -->
+        <div class="mb-8">
+            <h2 class="text-white text-4xl font-extrabold tracking-tighter italic drop-shadow-md">
+                LocaMonda<span class="text-blue-500">.</span>
+            </h2>
+        </div>
+
+        <!-- Text -->
+        <span class="text-white text-sm font-semibold tracking-widest uppercase drop-shadow-md">
+            Find Your Dream Home
+        </span>
+
+        <h1 class="text-white text-5xl md:text-7xl font-bold mt-4 mb-12 drop-shadow-lg">
+            Discover Best Apartments
+        </h1>
+
+        <!-- Search Panel -->
+        <form method="get" asp-controller="Property" asp-action="Index"
+              class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-6 md:p-8 mx-auto">
+
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+
+                <!-- City -->
+                <div class="flex flex-col text-left">
+                    <label class="text-[11px] font-bold uppercase mb-2 text-slate-500 ml-1">City</label>
+                    <input type="text" name="city" placeholder="Enter city"
+                           class="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition" />
+                </div>
+
+                <!-- Min Price -->
+                <div class="flex flex-col text-left">
+                    <label class="text-[11px] font-bold uppercase mb-2 text-slate-500 ml-1">Min Price</label>
+                    <input type="number" name="minPrice" placeholder="0"
+                           class="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition" />
+                </div>
+
+                <!-- Max Price -->
+                <div class="flex flex-col text-left">
+                    <label class="text-[11px] font-bold uppercase mb-2 text-slate-500 ml-1">Max Price</label>
+                    <input type="number" name="maxPrice" placeholder="10000"
+                           class="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition" />
+                </div>
+
+                <!-- Category -->
+                <div class="flex flex-col text-left">
+                    <label class="text-[11px] font-bold uppercase mb-2 text-slate-500 ml-1">Category</label>
+                    <select name="categoryId"
+                            asp-items="ViewBag.Categories"
+                            class="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition bg-white">
+                        <option value="">All Categories</option>
+                    </select>
+                </div>
+
+                <!-- Button -->
+                <div>
+                    <button type="submit"
+                            class="w-full bg-slate-900 text-white font-bold py-3.5 rounded-lg hover:bg-black transition duration-300 shadow-xl text-sm tracking-wide">
+                        SEARCH NOW
+                    </button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div> *@
+
+@{
+    ViewData["Title"] = "Home";
+}
+
+<!-- HERO -->
+<div class="relative h-screen w-full overflow-hidden">
+
+    <!-- Background -->
+    <div class="absolute inset-0">
+        <img src="/images/Home.jpg"
+             class="w-full h-full object-cover object-center" />
+
+        <div class="absolute inset-0 bg-black/40"></div>
+    </div>
+
+    <!-- Center Content -->
+    <div class="relative z-10 flex items-center justify-center h-full text-center px-4">
+
+        <div>
+
+            <h2 class="text-white text-4xl font-extrabold italic mb-6">
+                LocaMonda<span class="text-slate-900">.</span>
+            </h2>
+
+            <span class="text-white text-sm font-semibold tracking-widest uppercase">
+                Find Your Dream Home
+            </span>
+
+            <h1 class="text-white text-5xl md:text-7xl font-bold mt-4 mb-10">
+                Discover Best Unit
+            </h1>
+
+            <!-- Search -->
+            <form method="get" asp-controller="Property" asp-action="Index"
+                  class="bg-white/95 rounded-2xl shadow-2xl p-6 md:p-8 w-full max-w-5xl mx-auto">
+
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+
+                    <input type="text" name="city" placeholder="City"
+                           class="border rounded-lg px-4 py-3 text-sm" />
+
+                    <input type="number" name="minPrice" placeholder="Min Price"
+                           class="border rounded-lg px-4 py-3 text-sm" />
+
+                    <input type="number" name="maxPrice" placeholder="Max Price"
+                           class="border rounded-lg px-4 py-3 text-sm" />
+
+                    <select name="categoryId"
+                            asp-items="ViewBag.Categories"
+                            class="border rounded-lg px-4 py-3 text-sm bg-white">
+                        <option value="">All Categories</option>
+                    </select>
+
+                    <button type="submit"
+                            class="bg-slate-900 text-white rounded-lg py-3 hover:bg-black transition">
+                        SEARCH
+                    </button>
+
+                </div>
+            </form>
+
+        </div>
+
+    </div>
 </div>

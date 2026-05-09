@@ -20,7 +20,7 @@ namespace locamonda.Controllers
         }
 
         // ─── Index ─────────────────────────────
-
+        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);

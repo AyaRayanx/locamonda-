@@ -1,0 +1,160 @@
+﻿@model IEnumerable<locamonda.Models.Booking>
+@{
+    ViewData["Title"] = "Manage Bookings";
+}
+
+<div class="min-h-screen bg-[#F8F9FB] py-12 px-4 md:px-10">
+    @* Header Section *@
+    <div class="max-w-full mx-auto mb-10">
+        <h1 class="text-3xl font-bold text-[#1A1D2E] text-center">Manage Bookings</h1>
+        <p class="text-center text-slate-400 text-sm mt-2">Welcome back! Here are your property reservations.</p>
+    </div>
+
+    <div class="max-w-5xl mx-auto space-y-6">
+        @* التعديل الجوهري: نستخدم StringComparison لتجنب مشاكل الحروف الكبيرة والصغيرة *@
+        @{
+            var activeBookings = Model?.Where(b =>
+            !string.Equals(b.Status, "Cancelled", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(b.Status, "Rejected", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(b.Status, "NotAvailable", StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
+        @if (activeBookings != null && activeBookings.Any())
+        {
+            @foreach (var booking in activeBookings)
+            {
+                @* Booking Card for Owner *@
+                <div class="bg-white rounded-[2.5rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-50 flex flex-col md:flex-row gap-8 items-center transition-all duration-300 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] group">
+
+                    @* Property Image *@
+                    <div class="w-full md:w-56 h-40 flex-shrink-0 overflow-hidden rounded-[1.8rem] bg-gray-100 relative">
+                        @if (booking.Property?.Photos != null && booking.Property.Photos.Any())
+                        {
+                            @* بنستخدم Url.Content مع العلامة ~ لضمان الوصول للمجلد صح *@
+                            var photoName = booking.Property.Photos.FirstOrDefault(p => p.IsMain)?.PhotoUrl ?? booking.Property.Photos.First().PhotoUrl;
+
+                            <img src="@Url.Content("~/uploads/" + photoName)"
+                                 class="w-full h-full object-cover transition duration-700 group-hover:scale-110"
+                                 alt="Property" />
+                        }
+                        else
+                        {
+                            @* لو مفيش صورة، بنظهر الأيكونة دي *@
+                            <div class="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-2">
+                                <i class="fas fa-image text-3xl"></i>
+                                <span class="text-[10px] font-medium">No Image Found</span>
+                            </div>
+                        }
+
+                        @if (booking.IsDone)
+                        {
+                            <div class="absolute inset-0 bg-blue-600/10 backdrop-blur-[2px] flex items-center justify-center">
+                                <span class="bg-slate-900 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">Completed</span>
+                            </div>
+                        }
+                </div>
+
+                @* Customer & Booking Info *@
+                <div class="flex-1 w-full">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <span class="text-[10px] font-black @(booking.IsDone ? "text-slate-400" : "text-blue-500") uppercase tracking-[0.2em] mb-1 block">
+                                @(booking.IsDone ? "Past Records" : "Booking Request")
+                            </span>
+                            <h3 class="text-xl font-extrabold text-[#1A1D2E] mb-1">@booking.Property?.Title</h3>
+
+                            @* Customer Profile Info *@
+                            <div class="flex items-center gap-3 mt-3 p-2 bg-slate-50 rounded-2xl w-fit pr-6 border border-slate-100">
+                                <div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-slate-100">
+                                    @booking.User?.UserName?.Substring(0, 1).ToUpper()
+                                </div>
+                                <div>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase leading-none">Customer</p>
+                                    <p class="text-sm font-bold text-slate-700">@booking.User?.UserName</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        @* Status Badge *@
+                        <span class="px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest border
+                                    @(booking.IsDone ? "bg-blue-50 text-blue-600 border-blue-100" :
+                                                                booking.Status.Equals("Confirmed", StringComparison.OrdinalIgnoreCase) ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
+                                                                "bg-amber-50 text-amber-600 border-amber-100")">
+                        @(booking.IsDone ? "Completed" : booking.Status)
+                    </span>
+                </div>
+
+                        @* Booking Details *@
+                        <div class="flex flex-wrap justify-between items-end pt-4 border-t border-gray-50 mt-2">
+                            <div class="flex gap-8">
+                                <div>
+                                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-tighter mb-1">Duration</p>
+                                    <p class="text-sm text-slate-700 font-bold flex items-center gap-2">
+                                        <i class="far fa-calendar-alt text-blue-400"></i>
+                                        @booking.StartDate.ToString("MMM dd") - @booking.EndDate.ToString("MMM dd, yyyy")
+                                    </p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-tighter mb-1">Total Revenue</p>
+                                    <p class="text-xl font-black text-[#1A1D2E]">$@booking.TotalPrice.ToString("N0")</p>
+                                </div>
+                            </div>
+
+                            @* Actions *@
+                            <div class="flex gap-3 mt-4 md:mt-0">
+                        @if (string.Equals(booking.Status, "Pending", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <a asp-action="Confirm" asp-route-id="@booking.BookingId"
+                                       class="px-8 py-3 bg-[#1A2B49] text-white border border-slate-900 rounded-2xl font-bold text-sm hover:bg-white hover:text-[#1A2B49] transition-all shadow-lg">
+                                        Confirm
+                                    </a>
+                                    <a asp-action="Reject" asp-route-id="@booking.BookingId"
+                                       class="px-8 py-3 bg-white text-rose-500 border border-rose-100 rounded-2xl font-bold text-sm hover:bg-rose-50 transition-all"
+                                       onclick="return confirm('Reject this booking?')">
+                                        Reject
+                                    </a>
+                                }
+                                else if (string.Equals(booking.Status, "Confirmed", StringComparison.OrdinalIgnoreCase) && !booking.IsDone)
+                                {
+                                    <a asp-action="MarkAsDone" asp-route-id="@booking.BookingId"
+                                       class="px-8 py-3 bg-slate-950 text-white rounded-2xl font-bold text-sm hover:bg-slate-900 transition-all shadow-lg shadow-blue-100">
+                                        <i class="fas fa-check-double mr-2"></i> Done
+                                    </a>
+                                }
+                                else
+                                {
+                                    <button disabled class="px-8 py-3 bg-slate-50 text-slate-400 rounded-2xl font-bold text-sm cursor-not-allowed border border-slate-100">
+                                        @(booking.IsDone ? "Order Archived" : "Processed")
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            @* Empty State *@
+            <div class="bg-white rounded-[3rem] p-24 text-center border-2 border-dashed border-gray-100">
+                <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-200">
+                    <i class="fas fa-clipboard-list text-5xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-slate-900 mb-2">No Active Bookings</h3>
+                <p class="text-slate-400 mb-0">Active and confirmed bookings will show up here.</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        @@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            letter-spacing: -0.02em;
+        }
+    </style>
+}

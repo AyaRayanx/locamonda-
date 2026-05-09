@@ -1,0 +1,91 @@
+﻿@model IEnumerable<locamonda.Models.Notification>
+
+@{
+    ViewData["Title"] = "My Notifications";
+}
+
+<div class="min-h-screen bg-[#F8F9FB] py-12 px-4 md:px-10">
+    <div class="max-w-4xl mx-auto">
+
+        @* Header Section *@
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-extrabold text-slate-800 ">Notifications</h1>
+                <p class="text-slate-500 mt-1">Stay updated with your latest activities</p>
+            </div>
+
+            @if (Model.Any(n => !n.IsRead))
+            {
+                <a asp-action="MarkAllRead" class="text-sm font-bold text-blue-600 hover:text-blue-700 bg-blue-50 px-4 py-2 rounded-xl transition-all">
+                    Mark all as read
+                </a>
+            }
+        </div>
+
+        <div class="space-y-4">
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var item in Model)
+                {
+                    <div class="group relative bg-white rounded-[2rem] p-5 shadow-[0_8px_30px_rgb(0,0,0,0.02)] border @(item.IsRead ? "border-gray-50" : "border-blue-100 bg-blue-50/30") transition-all hover:shadow-[0_12px_40px_rgb(0,0,0,0.06)]">
+
+                        <div class="flex items-start gap-4">
+                            @* Icon *@
+                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0
+                                        @(item.Type == "BookingConfirmed" ? "bg-emerald-100 text-emerald-600" :
+                                                                   item.Type == "BookingCancelled" ? "bg-rose-100 text-rose-600" : "bg-blue-100 text-blue-600")">
+                        <i class="fas @(item.Type == "BookingConfirmed" ? "fa-check-circle" :
+                                                                          item.Type == "BookingCancelled" ? "fa-times-circle" : "fa-bell") text-xl"></i>
+                    </div>
+
+                            @* Content *@
+                            <div class="flex-1">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">@item.Type</p>
+                                        <p class="text-slate-700 font-medium @(item.IsRead ? "" : "font-bold text-[#1A1D2E]")">
+                                            @item.NotificationMessage
+                                        </p>
+                                        <p class="text-[11px] text-slate-400 mt-2 flex items-center gap-1">
+                                            <i class="far fa-clock"></i> @item.CreatedAt.ToString("MMM dd, hh:mm tt")
+                                        </p>
+                                    </div>
+
+                                    @* Actions *@
+                                    <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        @if (!item.IsRead)
+                                        {
+                                            <a asp-action="MarkRead" asp-route-id="@item.NotificationId" class="p-2 text-blue-500 hover:bg-blue-50 rounded-lg" title="Mark as read">
+                                                <i class="fas fa-check"></i>
+                                            </a>
+                                        }
+                                        <a asp-action="Delete" asp-route-id="@item.NotificationId" class="p-2 text-rose-400 hover:bg-rose-50 rounded-lg" onclick="return confirm('Delete this notification?')" title="Delete">
+                                            <i class="far fa-trash-alt"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (!item.IsRead)
+                        {
+                            <div class="absolute top-5 right-5 w-2 h-2 bg-blue-600 rounded-full"></div>
+                        }
+                    </div>
+                }
+            }
+            else
+            {
+                @* Empty State *@
+                <div class="bg-white rounded-[3rem] p-20 text-center border-2 border-dashed border-gray-100">
+                    <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-200">
+                        <i class="fas fa-bell-slash text-4xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-1">No notifications yet</h3>
+                    <p class="text-slate-400">We'll notify you when something important happens.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+

@@ -1,81 +1,118 @@
-@model RegisterViewModel
+@model locamonda.Models.ViewModels.RegisterViewModel
 @{
-    ViewData["Title"] = "Create Account";
+    ViewData["Title"] = "Register";
 }
 
-<div class="auth-container">
-    <div class="auth-card">
-        <div class="auth-header">
-            <h1>Join Locamonda</h1>
-            <p>Start your journey with us today</p>
+<div class="min-h-[80vh] flex items-center justify-center py-12 px-4 bg-gray-50">
+    <div class="max-w-5xl w-full flex flex-col md:flex-row items-center gap-12 bg-white p-16 rounded-3xl shadow-xl">
+
+        <div class="w-full md:w-1/2 space-y-6">
+            <div>
+                <p class="font-extrabold text-zinc-700">
+                    <span class="text-slate-950">Loca</span>Monda
+                </p>
+                <h2 class="text-3xl font-extrabold text-gray-900">Create Account</h2>
+                <p class="text-gray-500">Join us to find your Home!</p>
+            </div>
+
+            
+            <div asp-validation-summary="ModelOnly" class="p-3 text-sm text-red-700 bg-red-100 rounded-lg"></div>
+
+            @if (ViewBag.Error != null)
+            {
+                <div class="p-3 text-sm text-red-700 bg-red-100 rounded-lg">
+                    @ViewBag.Error
+                </div>
+            }
+
+            <form asp-controller="Users" asp-action="Register" method="POST" class="space-y-4">
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Full Name</label>
+                        <input asp-for="Name" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-slate-800 outline-none transition-all" placeholder="Your Name">
+                        <span asp-validation-for="Name" class="text-red-500 text-[10px]"></span>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Phone</label>
+                        <input asp-for="PhoneNumber" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-slate-800 outline-none transition-all" placeholder="01xxx">
+                        <span asp-validation-for="PhoneNumber" class="text-red-500 text-[10px]"></span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Email Address</label>
+                    <input asp-for="Email" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-slate-800 outline-none transition-all" placeholder="Enter Your Email">
+                    <span asp-validation-for="Email" class="text-red-500 text-[10px]"></span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Address</label>
+                        <input asp-for="Address" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-slate-800 outline-none transition-all" placeholder="City, Street">
+                        <span asp-validation-for="Address" class="text-red-500 text-[10px]"></span>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Age</label>
+                        <input asp-for="Age" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-slate-800 outline-none transition-all" placeholder="25">
+                        <span asp-validation-for="Age" class="text-red-500 text-[10px]"></span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Password</label>
+                        <input asp-for="Password" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-slate-800 outline-none transition-all" placeholder="••••••••">
+                        <span asp-validation-for="Password" class="text-red-500 text-[10px]"></span>
+                    </div>
+                    <div>
+                       
+                        <label class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                        <input asp-for="ConfirmPassword" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-slate-800 outline-none transition-all" placeholder="••••••••">
+                        <span asp-validation-for="ConfirmPassword" class="text-red-500 text-[10px]"></span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">I am a</label>
+                    <div class="relative">
+                        <select asp-for="AccountType" class="cursor-pointer mt-1 block w-full px-4 py-2 border border-gray-300 rounded-xl bg-white text-gray-600 appearance-none focus:ring-2 focus:ring-slate-800 outline-none transition-all">
+                            <option value="">Select Account Type</option>
+                            <option value="Customer">Customer</option>
+                            <option value="Owner">Owner</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
+                            <svg class="fill-current h-4 w-4" viewBox="0 0 20 20">
+                                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <span asp-validation-for="AccountType" class="text-red-500 text-[10px]"></span>
+                </div>
+
+                <button type="submit" class="w-full py-3 px-4 rounded-xl text-white bg-slate-800 hover:bg-slate-900 transition mt-4 shadow-md transform hover:-translate-y-0.5 duration-200">
+                    Sign Up
+                </button>
+
+                <p class="text-center text-sm text-gray-600">
+                    Already have an account?
+                    <a asp-controller="Users" asp-action="Login"
+                       class="cursor-pointer font-bold text-slate-800 hover:text-slate-950 underline underline-offset-4 transition-colors">
+                        LOGIN
+                    </a>
+                </p>
+            </form>
         </div>
 
-        <form asp-action="Register" method="post" class="auth-form">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-            <div class="form-group">
-                <label asp-for="Name"></label>
-                <input asp-for="Name" class="form-control" placeholder="Enter your full name" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+        <div class="hidden md:block w-1/2 relative h-[550px]">
+            <div class="absolute inset-0 bg-gray-100 rounded-[4rem] overflow-hidden shadow-2xl"
+                 style="border-top-left-radius: 10rem; border-bottom-right-radius: 5rem;">
+                <img src="~/images/Ris_login.jpg" class="w-full h-full object-cover" alt="Register">
             </div>
-
-            <div class="form-group">
-                <label asp-for="Email"></label>
-                <input asp-for="Email" class="form-control" placeholder="example@email.com" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label asp-for="Password"></label>
-                    <input asp-for="Password" class="form-control" placeholder="••••••••" />
-                    <span asp-validation-for="Password" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="ConfirmPassword"></label>
-                    <input asp-for="ConfirmPassword" class="form-control" placeholder="••••••••" />
-                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label asp-for="PhoneNumber"></label>
-                    <input asp-for="PhoneNumber" class="form-control" placeholder="+1 234 567 890" />
-                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="AccountType"></label>
-                    <select asp-for="AccountType" class="form-control">
-                        <option value="Customer">Customer</option>
-                        <option value="Owner">Owner</option>
-                    </select>
-                    <span asp-validation-for="AccountType" class="text-danger"></span>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label asp-for="Age"></label>
-                    <input asp-for="Age" class="form-control" placeholder="18" />
-                    <span asp-validation-for="Age" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="Address"></label>
-                    <input asp-for="Address" class="form-control" placeholder="Your current city" />
-                    <span asp-validation-for="Address" class="text-danger"></span>
-                </div>
-            </div>
-
-            <button type="submit" class="btn-primary">Create Account</button>
-        </form>
-
-        <div class="auth-footer">
-            <p>Already have an account? <a asp-action="Login">Sign In</a></p>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <partial name="_ValidationScriptsPartial" />
 }

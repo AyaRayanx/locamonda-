@@ -1,0 +1,82 @@
+﻿@model IEnumerable<locamonda.Models.Amenity>
+
+@{
+    ViewData["Title"] = "Manage Amenities";
+}
+
+<div class="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
+            <div>
+                <h1 class="text-3xl font-black text-slate-900 tracking-tight">Amenities Library</h1>
+                <p class="text-slate-500 font-medium mt-1">Manage the features and facilities available for properties</p>
+            </div>
+            <a asp-action="Create" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 px-6 rounded-2xl shadow-lg shadow-indigo-100 transition-all transform hover:scale-105 active:scale-95">
+                <i class="fas fa-plus-circle mr-2"></i>
+                Add New Amenity
+            </a>
+        </div>
+
+        <div class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50/50 border-b border-slate-100">
+                            <th class="px-8 py-6 text-xs font-black text-slate-400 uppercase tracking-widest">Icon</th>
+                            <th class="px-8 py-6 text-xs font-black text-slate-400 uppercase tracking-widest">Amenity Name</th>
+                            <th class="px-8 py-6 text-xs font-black text-slate-400 uppercase tracking-widest text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="3" class="px-8 py-12 text-center">
+                                    <div class="flex flex-col items-center">
+                                        <i class="fas fa-folder-open text-slate-200 text-5xl mb-4"></i>
+                                        <p class="text-slate-400 font-bold italic">No amenities added yet.</p>
+                                        <a asp-action="Create" class="text-indigo-500 text-sm font-black mt-2 hover:underline">Start by adding your first one!</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        @foreach (var item in Model)
+                        {
+                            <tr class="hover:bg-slate-50/50 transition-colors group">
+                                <td class="px-8 py-6">
+                                    <div class="h-12 w-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl shadow-sm border border-indigo-100 group-hover:scale-110 transition-transform">
+                                        <i class="@item.Icon"></i>
+                                    </div>
+                                </td>
+                                <td class="px-8 py-6">
+                                    <span class="text-slate-900 font-black text-lg">@item.Name</span>
+                                </td>
+                                <td class="px-8 py-6">
+                                    <div class="flex items-center justify-center space-x-3">
+                                        <a asp-action="Edit" asp-route-id="@item.AmenityId" class="p-3 text-amber-500 hover:bg-amber-50 rounded-xl transition-all" title="Edit">
+                                            <i class="fas fa-edit text-lg"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.AmenityId"
+                                           class="p-3 text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+                                           onclick="return confirm('Are you sure you want to delete this amenity? It might be linked to existing properties.');"
+                                           title="Delete">
+                                            <i class="fas fa-trash-alt text-lg"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-8 flex justify-center">
+            <a asp-controller="Property" asp-action="Index" class="text-slate-400 font-bold hover:text-slate-600 transition-colors flex items-center">
+                <i class="fas fa-arrow-left mr-2 text-xs"></i>
+                Back to My Properties
+            </a>
+        </div>
+    </div>
+</div>
