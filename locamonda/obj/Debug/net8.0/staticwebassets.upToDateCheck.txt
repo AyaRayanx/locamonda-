@@ -67,6 +67,7 @@ wwwroot\uploads\6e57f996-2e2d-4a5c-b13d-639b85770aa1_download (74).jpg
 wwwroot\uploads\74edbe84-273f-4a7d-a499-2062b97ff55c.jpg
 wwwroot\uploads\7fe79eff-9278-439d-919c-62afecaef153_villa3.jpg
 wwwroot\uploads\9296d83a-d0f5-4617-b0b8-7779795f85be_سيد سيجي.jpg
+wwwroot\uploads\9c62eccd-3ad8-4769-afcf-89a5bd96aec9_12b5271b4b9fb0f8212693ee90217458.jpg
 wwwroot\uploads\afcce465-9aea-484f-8bd1-8e0bf105675a_download (74).jpg
 wwwroot\uploads\c030d66e-53c9-4be5-aea9-e56ae1b4c9d7_download (74).jpg
 wwwroot\uploads\d727f830-70d1-4b6f-b56f-82ce737e3216_Gta (1).jpg

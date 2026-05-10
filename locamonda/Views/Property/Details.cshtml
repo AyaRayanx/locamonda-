@@ -1,630 +1,218 @@
-﻿@* @model locamonda.Models.Property
+@model locamonda.Models.Property
+@inject Microsoft.AspNetCore.Identity.UserManager<Users> UserManager
+@{
+    ViewData["Title"] = Model.Title;
+    var user = await UserManager.GetUserAsync(User);
+    bool isOwner = user != null && Model.OwnerId == user.Id;
+}
 
-<div class="min-h-screen bg-slate-900 text-white px-6 py-10">
+<div class="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900 px-6 py-10 text-white">
+    <div class="max-w-5xl mx-auto space-y-8">
 
-    <div class="max-w-5xl mx-auto">
+        <!-- Title + Location -->
+        <div class="space-y-4">
+            <div>
+                <div class="flex justify-between items-start">
+                    <h1 class="text-4xl font-bold tracking-wide text-white">@Model.Title</h1>
+                    
+                    @if (user != null && !isOwner)
+                    {
+                        <!-- Favorite Heart Icon -->
+                        <form asp-controller="Favorite" asp-action="Add" asp-route-propertyId="@Model.PropertyId" method="post">
+                            <button type="submit" class="text-3xl hover:scale-110 transition duration-300">
+                                @(ViewBag.IsFavorite == true ? "❤️" : "🤍")
+                            </button>
+                        </form>
+                    }
+                </div>
+                <p class="text-slate-400 mt-2 text-lg italic">✨ Discover your next home away from home</p>
+            </div>
 
-        <!-- Title -->
-        <h1 class="text-3xl md:text-4xl font-bold mb-4">
-            @Model.Title
-        </h1>
+            <!-- Owner Contact Box -->
+            <div class="bg-white/10 border border-white/10 backdrop-blur-md rounded-2xl p-4 flex items-center gap-4 shadow-lg">
+                <div class="bg-slate-800 p-3 rounded-xl text-2xl">👤</div>
+                <div class="flex-1">
+                    <p class="text-sm text-slate-400">Owner Contact</p>
+                    <div class="flex flex-wrap gap-x-6 gap-y-1">
+                        @if (!string.IsNullOrEmpty(Model.Owner?.PhoneNumber))
+                        {
+                            <p class="text-lg font-semibold text-white">
+                                <i class="fas fa-phone-alt text-blue-400 text-sm mr-2"></i> @Model.Owner.PhoneNumber
+                            </p>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Owner?.Email))
+                        {
+                            <p class="text-lg font-semibold text-white">
+                                <i class="fas fa-envelope text-blue-400 text-sm mr-2"></i> @Model.Owner.Email
+                            </p>
+                        }
+                    </div>
+                </div>
+            </div>
 
-        <!-- Location -->
-        <p class="text-slate-400 mb-6">
-            📍 @Model.Location?.City
-        </p>
-
-        <!-- Image -->
-        <div class="rounded-2xl overflow-hidden mb-8">
-            @* <img src="@(Model.Photos.FirstOrDefault()?.ImageUrl ?? "/images/default.jpg")" *@
-@*                  class="w-full h-96 object-cover" />
+            <!-- Location Box (Updated with coordinates) -->
+            <div class="bg-white/10 border border-white/10 backdrop-blur-md rounded-2xl p-4 flex items-center gap-4 shadow-lg">
+                <div class="bg-slate-800 p-3 rounded-xl text-2xl">📍</div>
+                <div>
+                    <p class="text-sm text-slate-400">Location</p>
+                    @if (Model.Latitude.HasValue && Model.Longitude.HasValue)
+                    {
+                        <a href="https://www.google.com/maps/search/?api=1&query=@Model.Latitude,@Model.Longitude"
+                           target="_blank"
+                           class="text-lg font-semibold text-white hover:text-blue-400 transition-colors no-underline">
+                            @Model.Location?.City, @Model.Location?.Country <i class="fas fa-external-link-alt text-xs ml-1"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="text-lg font-semibold text-white">@Model.Location?.City, @Model.Location?.Country</span>
+                    }
+                </div>
+            </div>
         </div>
 
-        <!-- Info -->
-        <div class="bg-slate-800 rounded-2xl p-6 mb-8 shadow-lg">
-
-            <p class="text-lg mb-2">
-                💰 Price:
-                <span class="text-white font-bold">$@Model.Price</span>
-            </p>
-
-            <p class="text-slate-300">
-                🛏 Rooms: @Model.Rooms | 🛁 Bathrooms: @Model.Bathrooms
-            </p>
-
-            <p class="mt-4 text-slate-300">
-                @Model.Description
-            </p>
-
+        <!-- Image Gallery (Simplified) -->
+        <div class="rounded-3xl overflow-hidden shadow-2xl border border-white/5 bg-slate-800 relative group">
+            <img src="@(Model.Photos?.FirstOrDefault()?.PhotoUrl ?? "/images/default.jpg")"
+                 class="w-full h-[500px] object-cover group-hover:scale-[1.02] transition duration-700" />
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 to-transparent"></div>
         </div>
 
-        <!-- Reviews -->
-        <div class="bg-slate-800 rounded-2xl p-6 mb-8">
+        <!-- Info & Booking Card -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left: Description -->
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white/5 border border-white/10 rounded-3xl p-8 shadow-xl">
+                    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <i class="fas fa-info-circle text-blue-400"></i> Description
+                    </h3>
+                    <p class="text-slate-300 leading-relaxed text-lg">@Model.Description</p>
+                    
+                    <div class="grid grid-cols-2 gap-6 mt-8">
+                        <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
+                            <p class="text-slate-400 text-sm">Bedrooms</p>
+                            <p class="text-2xl font-bold">🛏 @Model.Rooms</p>
+                        </div>
+                        <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
+                            <p class="text-slate-400 text-sm">Bathrooms</p>
+                            <p class="text-2xl font-bold">🛁 @Model.Bathrooms</p>
+                        </div>
+                    </div>
+                </div>
 
-            <h2 class="text-xl font-bold mb-4">Reviews</h2>
-
-            @if (Model.Reviews != null && Model.Reviews.Any())
-            {
-                @foreach (var r in Model.Reviews)
-                {
-                    <div class="border-b border-slate-700 py-4">
-
-                        <!-- Stars -->
-                        <div class="flex gap-1 mb-2">
-                            @for (int i = 0; i < r.Rating; i++)
+                <!-- Reviews Section -->
+                <div class="bg-white/5 border border-white/10 rounded-3xl p-8 shadow-xl">
+                    <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                        <i class="fas fa-star text-yellow-400"></i> Reviews
+                    </h3>
+                    @if (Model.Reviews != null && Model.Reviews.Any())
+                    {
+                        <div class="space-y-6">
+                            @foreach (var r in Model.Reviews)
                             {
-                                <span>⭐</span>
+                                <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
+                                    <div class="text-yellow-500 mb-2">
+                                        @for (int i = 0; i < r.Rating; i++) { <span>★</span> }
+                                    </div>
+                                    <p class="text-slate-200">@r.Comment</p>
+                                </div>
                             }
                         </div>
+                    }
+                    else
+                    {
+                        <p class="text-slate-500 italic">No reviews yet for this property.</p>
+                    }
+                </div>
 
-                        <!-- Comment -->
-                        <p class="text-slate-200">
-                            @r.Comment
-                        </p>
+                <!-- Add Review Section (Moved Back to Main Column) -->
+                @if (user != null && !isOwner)
+                {
+                    <div class="bg-white/5 border border-white/10 rounded-3xl p-8 shadow-xl">
+                        <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                            <i class="fas fa-edit text-blue-400"></i> Add Your Review
+                        </h3>
+                        <form asp-controller="Review" asp-action="Create" method="post" class="space-y-6">
+                            <input type="hidden" name="PropertyId" value="@Model.PropertyId" />
+                            
+                            <div>
+                                <label class="block text-slate-400 mb-2 text-sm">Rating</label>
+                                <div class="rating flex flex-row-reverse justify-end gap-2 text-3xl">
+                                    <input type="radio" name="Rating" value="5" id="r5" checked><label for="r5" class="cursor-pointer hover:text-yellow-400 transition">★</label>
+                                    <input type="radio" name="Rating" value="4" id="r4"><label for="r4" class="cursor-pointer hover:text-yellow-400 transition">★</label>
+                                    <input type="radio" name="Rating" value="3" id="r3"><label for="r3" class="cursor-pointer hover:text-yellow-400 transition">★</label>
+                                    <input type="radio" name="Rating" value="2" id="r2"><label for="r2" class="cursor-pointer hover:text-yellow-400 transition">★</label>
+                                    <input type="radio" name="Rating" value="1" id="r1"><label for="r1" class="cursor-pointer hover:text-yellow-400 transition">★</label>
+                                </div>
+                            </div>
 
+                            <div>
+                                <label class="block text-slate-400 mb-2 text-sm">Your Comment</label>
+                                <textarea name="Comment" required 
+                                          class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 text-white focus:ring-2 focus:ring-blue-500 outline-none transition" 
+                                          rows="4" placeholder="Share your experience with others..."></textarea>
+                            </div>
+
+                            <button type="submit" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg">
+                                Post My Review
+                            </button>
+                        </form>
                     </div>
+
+                    <style>
+                        .rating input { display: none; }
+                        .rating input:checked ~ label { color: #facc15; }
+                        .rating label { color: #475569; }
+                    </style>
                 }
-            }
-            else
-            {
-                <p class="text-slate-400">No reviews yet</p>
-            }
-
-        </div>
-
-        <!-- Add Review -->
-        <div class="bg-slate-800 rounded-2xl p-6 mb-8">
-
-            <h2 class="text-xl font-bold mb-4">Add Your Review</h2>
-
-            <form asp-controller="Review" asp-action="Create" method="post" class="space-y-4">
-
-                <!-- Property Id -->
-                <input type="hidden" name="PropertyId" value="@Model.PropertyId" />
-
-                <!-- Comment -->
-                <textarea name="Comment"
-                          class="w-full p-3 rounded-lg bg-slate-900 text-white border border-slate-700 focus:ring-2 focus:ring-slate-600"
-                          placeholder="Write your review..."></textarea>
-
-             <!-- Rating -->
-<div class="rating flex flex-row-reverse justify-end gap-1">
-
-    <input type="radio" name="Rating" id="star5" value="5">
-    <label for="star5">★</label>
-
-    <input type="radio" name="Rating" id="star4" value="4">
-    <label for="star4">★</label>
-
-    <input type="radio" name="Rating" id="star3" value="3">
-    <label for="star3">★</label>
-
-    <input type="radio" name="Rating" id="star2" value="2">
-    <label for="star2">★</label>
-
-    <input type="radio" name="Rating" id="star1" value="1">
-    <label for="star1">★</label>
-
-</div>
-
-<style>
-    .rating input {
-        display: none;
-    }
-
-    .rating label {
-        font-size: 35px;
-        color: #475569; /* slate */
-        cursor: pointer;
-        transition: 0.3s;
-    }
-
-    /* hover */
-    .rating label:hover,
-    .rating label:hover ~ label {
-        color: #facc15;
-    }
-
-    /* selected */
-    .rating input:checked ~ label {
-        color: #facc15;
-    }
-</style>
-                <!-- Button -->
-                <button type="submit"
-                        class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg font-bold transition">
-                    Submit Review
-                </button>
-
-            </form>
-
-        </div>
-
-        <!-- Contact Owner -->
-       <a asp-controller="Message"
-   asp-action="Send"
-   asp-route-propertyId="@Model.PropertyId"
-   class="bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg">
-   Contact Owner
-</a>
-
-    </div>
-</div> *@
-
-
-@* 
-@model locamonda.Models.Property
-
-<div class="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900 px-6 py-10 text-white">
-
-    <div class="max-w-5xl mx-auto space-y-8">
-
-        <!-- Title -->
-        <div>
-            <h1 class="text-4xl font-bold tracking-wide">
-                @Model.Title
-            </h1>
-
-            <p class="text-slate-300 mt-2">
-                📍 @Model.Location?.City
-            </p>
-        </div>
-
-        <!-- Image -->
-        <div class="rounded-2xl overflow-hidden shadow-2xl border border-slate-700">
-            <img src="@(Model.Photos?.FirstOrDefault()?.PhotoUrl ?? "/images/default.jpg")"
-                 class="w-full h-[420px] object-cover hover:scale-105 transition duration-500" />
-        </div>
-
-        <!-- Info Card -->
-        <div class="bg-white/10 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-xl">
-
-            <div class="flex justify-between items-center mb-4">
-                <p class="text-xl font-semibold">
-                    💰 $@Model.Price
-                </p>
-
-                <span class="px-3 py-1 bg-slate-800 rounded-full text-sm">
-                    Available
-                </span>
             </div>
 
-            <p class="text-slate-300 mb-2">
-                🛏 @Model.Rooms Rooms • 🛁 @Model.Bathrooms Bathrooms
-            </p>
+            <!-- Right: Booking Sidebar -->
+            <div class="space-y-6">
+                <div class="bg-white/5 border border-white/10 rounded-3xl p-8 shadow-xl sticky top-10">
+                    <div class="mb-6">
+                        <p class="text-slate-400 text-sm font-bold uppercase tracking-wider">Price per night</p>
+                        <p class="text-4xl font-black text-white mt-1">$@Model.Price</p>
+                    </div>
 
-            <p class="text-slate-200 leading-relaxed">
-                @Model.Description
-            </p>
-        </div>
-
-        <!-- Reviews -->
-        <div class="bg-white text-slate-900 rounded-2xl p-6 shadow-xl">
-
-            <h2 class="text-2xl font-bold mb-4">Reviews</h2>
-
-            @if (Model.Reviews != null && Model.Reviews.Any())
-            {
-                <div class="space-y-4">
-                    @foreach (var r in Model.Reviews)
-                    {
-                        <div class="border-b pb-3">
-
-                            <div class="text-yellow-500 text-lg">
-                                @for (int i = 0; i < r.Rating; i++)
-                                {
-                                    <span>★</span>
-                                }
+                    <div class="space-y-4">
+                        @if (user == null)
+                        {
+                            <div class="p-6 bg-white/5 rounded-2xl border border-white/5 text-center">
+                                <p class="text-slate-300 mb-4 font-medium">Want to book this place?</p>
+                                <a asp-controller="Users" asp-action="Login" 
+                                   class="block w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition no-underline">
+                                    Login to Book
+                                </a>
+                                <p class="text-xs text-slate-400 mt-3">Don't have an account? <a asp-controller="Users" asp-action="Register" class="text-blue-400 underline">Register</a></p>
                             </div>
-
-                            <p class="text-slate-700 mt-1">
-                                @r.Comment
-                            </p>
-
-                        </div>
-                    }
-                </div>
-            }
-            else
-            {
-                <p class="text-slate-500">No reviews yet</p>
-            }
-
-        </div>
-
-        <!-- Add Review -->
-        <div class="bg-white text-slate-900 rounded-2xl p-6 shadow-xl">
-
-            <h2 class="text-xl font-bold mb-4">Add Review</h2>
-
-            <form asp-controller="Review" asp-action="Create" method="post" class="space-y-4">
-
-                <input type="hidden" name="PropertyId" value="@Model.PropertyId" />
-
-                <textarea name="Comment"
-                          class="w-full p-3 rounded-xl bg-slate-100 border focus:outline-none focus:ring-2 focus:ring-slate-400"
-                          placeholder="Write your review..."></textarea>
-
-                <!-- Rating -->
-                <div class="rating flex flex-row-reverse justify-end gap-1 text-3xl">
-
-                    <input type="radio" name="Rating" value="5" id="r5"><label for="r5">★</label>
-                    <input type="radio" name="Rating" value="4" id="r4"><label for="r4">★</label>
-                    <input type="radio" name="Rating" value="3" id="r3"><label for="r3">★</label>
-                    <input type="radio" name="Rating" value="2" id="r2"><label for="r2">★</label>
-                    <input type="radio" name="Rating" value="1" id="r1"><label for="r1">★</label>
-
-                </div>
-
-                <style>
-                    .rating input { display: none; }
-                    .rating label {
-                        color: #cbd5e1;
-                        cursor: pointer;
-                        transition: 0.2s;
-                    }
-                    .rating label:hover,
-                    .rating label:hover ~ label {
-                        color: #facc15;
-                    }
-                    .rating input:checked ~ label {
-                        color: #facc15;
-                    }
-                </style>
-
-                <button class="w-full bg-slate-900 text-white py-2 rounded-xl hover:bg-slate-800 transition">
-                    Submit Review
-                </button>
-
-            </form>
-        </div>
-
-        <!-- Contact -->
-        <a asp-controller="Message"
-           asp-action="Send"
-           asp-route-propertyId="@Model.PropertyId"
-           class="block text-center bg-white text-slate-900 py-3 rounded-xl font-semibold hover:bg-slate-200 transition">
-            Contact Owner
-        </a>
-
-    </div>
-</div> *@
-
-
-
-
-
-
-@*                 @model locamonda.Models.Property
-
-<div class="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900 px-6 py-10 text-white">
-
-    <div class="max-w-5xl mx-auto space-y-8">
-
-        <!-- Title + Location -->
-        <div class="space-y-4">
-
-            <div>
-                <h1 class="text-4xl font-bold tracking-wide">
-                    @Model.Title
-                </h1>
-
-                <p class="text-slate-400 mt-2 text-lg">
-                    ✨ Find your perfect stay
-                </p>
-            </div>
-
-            <!-- Location Box -->
-            <div class="bg-white/10 border border-white/10 backdrop-blur-md rounded-2xl p-4 flex items-center gap-4 shadow-lg">
-
-                <div class="bg-slate-800 p-3 rounded-xl text-2xl">
-                    📍
-                </div>
-
-                <div>
-                    <p class="text-sm text-slate-400">
-                        Location
-                    </p>
-
-                    <p class="text-lg font-semibold text-white">
-                        @Model.Location?.City
-                    </p>
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- Image -->
-        <div class="rounded-2xl overflow-hidden shadow-2xl border border-slate-700">
-            <img src="@(Model.Photos?.FirstOrDefault()?.PhotoUrl ?? "/images/default.jpg")"
-                 class="w-full h-[420px] object-cover hover:scale-105 transition duration-500" />
-        </div>
-
-        <!-- Info Card -->
-        <div class="bg-white/10 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-xl">
-
-            <div class="flex justify-between items-center mb-4">
-                <p class="text-xl font-semibold">
-                    💰 $@Model.Price
-                </p>
-
-                <span class="px-3 py-1 bg-slate-800 rounded-full text-sm">
-                    Available
-                </span>
-            </div>
-
-            <p class="text-slate-300 mb-2">
-                🛏 @Model.Rooms Rooms • 🛁 @Model.Bathrooms Bathrooms
-            </p>
-
-            <p class="text-slate-200 leading-relaxed">
-                @Model.Description
-            </p>
-        </div>
-
-        <!-- Reviews -->
-        <div class="bg-white text-slate-900 rounded-2xl p-6 shadow-xl">
-
-            <h2 class="text-2xl font-bold mb-4">Reviews</h2>
-
-            @if (Model.Reviews != null && Model.Reviews.Any())
-            {
-                <div class="space-y-4">
-                    @foreach (var r in Model.Reviews)
-                    {
-                        <div class="border-b pb-3">
-
-                            <div class="text-yellow-500 text-lg">
-                                @for (int i = 0; i < r.Rating; i++)
-                                {
-                                    <span>★</span>
-                                }
+                        }
+                        else if (!isOwner)
+                        {
+                            <a asp-controller="Booking" asp-action="Create" asp-route-propertyId="@Model.PropertyId"
+                               class="block text-center bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-blue-700 transition shadow-xl no-underline transform hover:-translate-y-1 active:translate-y-0">
+                                Book This Place
+                            </a>
+                        }
+                        else
+                        {
+                            <div class="p-4 bg-blue-500/20 text-blue-300 rounded-2xl text-center font-bold border border-blue-500/20">
+                                <i class="fas fa-user-shield mr-2"></i> You own this property
                             </div>
+                            <a asp-action="Edit" asp-route-id="@Model.PropertyId"
+                               class="block text-center bg-white text-slate-950 py-4 rounded-2xl font-bold hover:bg-slate-200 transition no-underline mt-4">
+                                Edit Property
+                            </a>
+                        }
+                    </div>
 
-                            <p class="text-slate-700 mt-1">
-                                @r.Comment
-                            </p>
-
-                        </div>
-                    }
+                    <div class="mt-6 pt-6 border-t border-white/10">
+                        <p class="text-xs text-slate-500 text-center font-medium italic">
+                            <i class="fas fa-shield-alt mr-1 text-blue-500"></i> Secure booking through Locamonda
+                        </p>
+                    </div>
                 </div>
-            }
-            else
-            {
-                <p class="text-slate-500">No reviews yet</p>
-            }
-
-        </div>
-
-        <!-- Add Review -->
-        <div class="bg-white text-slate-900 rounded-2xl p-6 shadow-xl">
-
-            <h2 class="text-xl font-bold mb-4">Add Review</h2>
-
-            <form asp-controller="Review" asp-action="Create" method="post" class="space-y-4">
-
-                <input type="hidden" name="PropertyId" value="@Model.PropertyId" />
-
-                <textarea name="Comment"
-                          class="w-full p-3 rounded-xl bg-slate-100 border focus:outline-none focus:ring-2 focus:ring-slate-400"
-                          placeholder="Write your review..."></textarea>
-
-                <!-- Rating -->
-                <div class="rating flex flex-row-reverse justify-end gap-1 text-3xl">
-
-                    <input type="radio" name="Rating" value="5" id="r5"><label for="r5">★</label>
-                    <input type="radio" name="Rating" value="4" id="r4"><label for="r4">★</label>
-                    <input type="radio" name="Rating" value="3" id="r3"><label for="r3">★</label>
-                    <input type="radio" name="Rating" value="2" id="r2"><label for="r2">★</label>
-                    <input type="radio" name="Rating" value="1" id="r1"><label for="r1">★</label>
-
-                </div>
-
-                <style>
-                    .rating input {
-                        display: none;
-                    }
-
-                    .rating label {
-                        color: #cbd5e1;
-                        cursor: pointer;
-                        transition: 0.2s;
-                    }
-
-                    .rating label:hover,
-                    .rating label:hover ~ label {
-                        color: #facc15;
-                    }
-
-                    .rating input:checked ~ label {
-                        color: #facc15;
-                    }
-                </style>
-
-                <button class="w-full bg-slate-900 text-white py-2 rounded-xl hover:bg-slate-800 transition">
-                    Submit Review
-                </button>
-
-            </form>
-        </div>
-
-        <!-- Contact -->
-        <a asp-controller="Message"
-           asp-action="Send"
-           asp-route-propertyId="@Model.PropertyId"
-           class="block text-center bg-white text-slate-900 py-3 rounded-xl font-semibold hover:bg-slate-200 transition">
-            Contact Owner
-        </a>
-
-    </div>
-</div> *@
-
-
-
-
-
-                @model locamonda.Models.Property
-
-<div class="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900 px-6 py-10 text-white">
-
-    <div class="max-w-5xl mx-auto space-y-8">
-
-        <!-- Title + Location -->
-        <div class="space-y-4">
-
-            <div>
-                <h1 class="text-4xl font-bold tracking-wide">
-                    @Model.Title
-                </h1>
-
-                <p class="text-slate-400 mt-2 text-lg">
-                    ✨ Find your perfect stay
-                </p>
             </div>
-
-            <!-- Location Box -->
-            <div class="bg-white/10 border border-white/10 backdrop-blur-md rounded-2xl p-4 flex items-center gap-4 shadow-lg">
-
-                <div class="bg-slate-800 p-3 rounded-xl text-2xl">
-                    📍
-                </div>
-
-                <div>
-                    <p class="text-sm text-slate-400">
-                        Location
-                    </p>
-
-                    <a href="https://www.google.com/maps/search/?api=1&query=@Model.Location?.Country"
-                       target="_blank"
-                       class="text-lg font-semibold text-white hover:text-blue-300 transition">
-
-                        @Model.Location?.Country
-
-                    </a>
-
-                </div>
-
-            </div>
-
         </div>
-
-        <!-- Image -->
-        <div class="rounded-2xl overflow-hidden shadow-2xl border border-slate-700">
-            <img src="@(Model.Photos?.FirstOrDefault()?.PhotoUrl ?? "/images/default.jpg")"
-                 class="w-full h-[420px] object-cover hover:scale-105 transition duration-500" />
-        </div>
-
-        <!-- Info Card -->
-        <div class="bg-white/10 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-xl">
-
-            <div class="flex justify-between items-center mb-4">
-                <p class="text-xl font-semibold">
-                    💰 $@Model.Price
-                </p>
-
-                <span class="px-3 py-1 bg-slate-800 rounded-full text-sm">
-                    Available
-                </span>
-            </div>
-
-            <p class="text-slate-300 mb-2">
-                🛏 @Model.Rooms Rooms • 🛁 @Model.Bathrooms Bathrooms
-            </p>
-
-            <p class="text-slate-200 leading-relaxed">
-                @Model.Description
-            </p>
-        </div>
-
-        <!-- Reviews -->
-        <div class="bg-white text-slate-900 rounded-2xl p-6 shadow-xl">
-
-            <h2 class="text-2xl font-bold mb-4">Reviews</h2>
-
-            @if (Model.Reviews != null && Model.Reviews.Any())
-            {
-                <div class="space-y-4">
-                    @foreach (var r in Model.Reviews)
-                    {
-                        <div class="border-b pb-3">
-
-                            <div class="text-yellow-500 text-lg">
-                                @for (int i = 0; i < r.Rating; i++)
-                                {
-                                    <span>★</span>
-                                }
-                            </div>
-
-                            <p class="text-slate-700 mt-1">
-                                @r.Comment
-                            </p>
-
-                        </div>
-                    }
-                </div>
-            }
-            else
-            {
-                <p class="text-slate-500">No reviews yet</p>
-            }
-
-        </div>
-
-        <!-- Add Review -->
-        <div class="bg-white text-slate-900 rounded-2xl p-6 shadow-xl">
-
-            <h2 class="text-xl font-bold mb-4">Add Review</h2>
-
-            <form asp-controller="Review" asp-action="Create" method="post" class="space-y-4">
-
-                <input type="hidden" name="PropertyId" value="@Model.PropertyId" />
-
-                <textarea name="Comment"
-                          class="w-full p-3 rounded-xl bg-slate-100 border focus:outline-none focus:ring-2 focus:ring-slate-400"
-                          placeholder="Write your review..."></textarea>
-
-                <!-- Rating -->
-                <div class="rating flex flex-row-reverse justify-end gap-1 text-3xl">
-
-                    <input type="radio" name="Rating" value="5" id="r5"><label for="r5">★</label>
-                    <input type="radio" name="Rating" value="4" id="r4"><label for="r4">★</label>
-                    <input type="radio" name="Rating" value="3" id="r3"><label for="r3">★</label>
-                    <input type="radio" name="Rating" value="2" id="r2"><label for="r2">★</label>
-                    <input type="radio" name="Rating" value="1" id="r1"><label for="r1">★</label>
-
-                </div>
-
-                <style>
-                    .rating input { display: none; }
-                    .rating label {
-                        color: #cbd5e1;
-                        cursor: pointer;
-                        transition: 0.2s;
-                    }
-                    .rating label:hover,
-                    .rating label:hover ~ label {
-                        color: #facc15;
-                    }
-                    .rating input:checked ~ label {
-                        color: #facc15;
-                    }
-                </style>
-
-                <button class="w-full bg-slate-900 text-white py-2 rounded-xl hover:bg-slate-800 transition">
-                    Submit Review
-                </button>
-
-            </form>
-        </div>
-
-        <!-- Contact -->
-        @* <a asp-controller="Message"
-           asp-action="Send"
-           asp-route-propertyId="@Model.PropertyId"
-           class="block text-center bg-white text-slate-900 py-3 rounded-xl font-semibold hover:bg-slate-200 transition">
-            Contact Owner
-        </a> *@
-
     </div>
 </div>

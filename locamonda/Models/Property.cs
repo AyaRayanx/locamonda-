@@ -50,6 +50,9 @@ namespace locamonda.Models
         [Required]
         public int CategoryId { get; set; }
 
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
+
         /* Navigation Properties */
 
         [ForeignKey("OwnerId")]

@@ -51,14 +51,12 @@ namespace locamonda.Controllers
             {
                 b.Status = "Cancelled";
 
-                // notify USER
                 await AddNotification(
                     b.UserId,
                     "BookingCancelled",
                     "Your booking was automatically cancelled due to inactivity"
                 );
 
-                // notify OWNER
                 await AddNotification(
                     b.Property.OwnerId,
                     "BookingCancelled",
@@ -91,11 +89,14 @@ namespace locamonda.Controllers
         // ───────── CREATE GET ─────────
         public async Task<IActionResult> Create(int propertyId)
         {
-            var property = await _context.Properties.FindAsync(propertyId);
+            var property = await _context.Properties
+                .FirstOrDefaultAsync(p => p.PropertyId == propertyId);
+
             if (property == null) return NotFound();
 
             ViewBag.Property = property;
-            return View();
+
+            return View(new Booking { PropertyId = propertyId });
         }
 
         // ───────── CREATE POST ─────────
@@ -103,41 +104,49 @@ namespace locamonda.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Booking booking)
         {
-            if (!ModelState.IsValid)
-            {
-                ViewBag.Property = await _context.Properties.FindAsync(booking.PropertyId);
-                return View(booking);
-            }
+            var property = await _context.Properties
+                .FirstOrDefaultAsync(p => p.PropertyId == booking.PropertyId);
+
+            if (property == null) return NotFound();
 
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();
 
-            if (booking.EndDate <= booking.StartDate)
+            // ❌ validation
+            if (booking.StartDate == default || booking.EndDate == default)
             {
-                ViewBag.Error = "Invalid dates";
+                ViewBag.Property = property;
+                ViewBag.Error = "Booking fields are required";
                 return View(booking);
             }
 
-            var property = await _context.Properties.FindAsync(booking.PropertyId);
+            if (booking.EndDate <= booking.StartDate)
+            {
+                ViewBag.Property = property;
+                ViewBag.Error = "Invalid dates";
+                return View(booking);
+            }
 
             booking.UserId = user.Id;
             booking.Status = "Pending";
             booking.CreatedAt = DateTime.Now;
             booking.IsDone = false;
 
+            booking.TotalPrice =
+                property.Price * (booking.EndDate - booking.StartDate).Days;
+
             _context.Bookings.Add(booking);
             await _context.SaveChangesAsync();
 
-            if (property == null) return NotFound();
-
-            // NOTIFY OWNER
             await AddNotification(
                 property.OwnerId,
                 "NewBooking",
                 $"New booking request for your property '{property.Title}'"
             );
 
-            return RedirectToAction(nameof(Index));
+            TempData["Success"] = "Booking sent successfully";
+
+            return RedirectToAction("Create", new { propertyId = booking.PropertyId });
         }
 
         // ───────── USER CANCEL ─────────
@@ -153,7 +162,6 @@ namespace locamonda.Controllers
             if (booking == null) return NotFound();
 
             booking.Status = "Cancelled";
-
             await _context.SaveChangesAsync();
 
             // NOTIFY OWNER
@@ -183,7 +191,6 @@ namespace locamonda.Controllers
 
             booking.Status = "Confirmed";
             booking.ConfirmedAt = DateTime.Now;
-
             await _context.SaveChangesAsync();
 
             // NOTIFY USER
@@ -215,7 +222,6 @@ namespace locamonda.Controllers
 
             await _context.SaveChangesAsync();
 
-            // NOTIFY USER
             await AddNotification(
                 booking.UserId,
                 "BookingCancelled",
@@ -244,7 +250,6 @@ namespace locamonda.Controllers
 
             await _context.SaveChangesAsync();
 
-            // NOTIFY BOTH
             await AddNotification(booking.UserId, "BookingCompleted", "Your booking is completed");
             await AddNotification(booking.Property.OwnerId, "BookingCompleted", "A booking was marked as completed");
 
@@ -262,7 +267,6 @@ namespace locamonda.Controllers
 
             var bookings = await _context.Bookings
                 .Include(b => b.Property)
-                .ThenInclude(p => p.Photos)
                 .Include(b => b.User)
                 .Where(b => b.Property.OwnerId == user.Id)
                 .ToListAsync();

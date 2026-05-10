@@ -26,75 +26,6 @@ namespace locamonda.Controllers
         }
 
         // ─── Index ─────────────────────────────
-
-        //public IActionResult Index(string city, decimal? minPrice, decimal? maxPrice, int? categoryId)
-        //{
-        //    var properties = _context.Properties
-        //        .Include(p => p.Location)
-        //        .Include(p => p.Category)
-        //        .Include(p => p.Photos)
-        //       .Where(p => p.IsActive && p.Status == "Available")
-        //        .AsQueryable();
-
-
-        //    return View(properties);
-
-        //    if (!string.IsNullOrEmpty(city))
-        //        properties = properties.Where(p => p.Location.City.Contains(city));
-
-        //    if (minPrice.HasValue)
-        //        properties = properties.Where(p => p.Price >= minPrice.Value);
-
-        //    if (maxPrice.HasValue)
-        //        properties = properties.Where(p => p.Price <= maxPrice.Value);
-
-        //    if (categoryId.HasValue)
-        //        properties = properties.Where(p => p.CategoryId == categoryId.Value);
-
-        //    ViewBag.Categories = new SelectList(_context.Categories, "CategoryId", "Name");
-
-        //    return View(properties.ToList());
-        //}
-        //public IActionResult Index(string city, decimal? minPrice, decimal? maxPrice, int? categoryId)
-        //{
-        //    //var properties = _context.Properties
-        //    //    .Include(p => p.Location)
-        //    //    .Include(p => p.Category)
-        //    //    .Include(p => p.Photos)
-        //    //    .Where(p => p.IsActive && p.Status == "Available")
-        //    //    .AsQueryable();
-        //    var properties = _context.Properties
-        //     .Include(p => p.Location)
-        //     .Include(p => p.Category)
-        //     .Include(p => p.Photos)
-        //     .AsQueryable();
-
-        //    if (!string.IsNullOrEmpty(city))
-        //        properties = properties.Where(p => p.Location.City.Contains(city));
-
-        //    if (minPrice.HasValue)
-        //        properties = properties.Where(p => p.Price >= minPrice.Value);
-
-        //    if (maxPrice.HasValue)
-        //        properties = properties.Where(p => p.Price <= maxPrice.Value);
-
-        //    if (categoryId.HasValue)
-        //        properties = properties.Where(p => p.CategoryId == categoryId.Value);
-
-        //    ViewBag.Categories = new SelectList(_context.Categories, "CategoryId", "Name");
-
-        //    return View(properties.ToList());
-        //}
-
-        // ─── Details ───────────────────────────
-
-
-
-
-
-
-
-        // ─── Index ─────────────────────────────
         public IActionResult Index(string city, decimal? minPrice, decimal? maxPrice, int? categoryId)
         {
             var properties = _context.Properties
@@ -117,39 +48,7 @@ namespace locamonda.Controllers
             return View(properties.ToList());
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        // ─── Details ───────────────────────────
         public IActionResult Details(int id)
         {
             var property = _context.Properties
@@ -167,7 +66,6 @@ namespace locamonda.Controllers
         }
 
         // ─── Create GET ────────────────────────
-
         [Authorize(Roles = "Owner")]
         public IActionResult Create()
         {
@@ -230,8 +128,8 @@ namespace locamonda.Controllers
 
             return RedirectToAction(nameof(MyProperties));
         }
-        // ─── Edit GET ──────────────────────────
 
+        // ─── Edit GET ──────────────────────────
         [Authorize(Roles = "Owner")]
         public async Task<IActionResult> Edit(int id)
         {
@@ -239,6 +137,8 @@ namespace locamonda.Controllers
             if (user == null) return Challenge();
 
             var property = await _context.Properties
+                .Include(p => p.Location)
+                .Include(p => p.Category)
                 .FirstOrDefaultAsync(p => p.PropertyId == id && p.OwnerId == user.Id);
 
             if (property == null) return NotFound();
@@ -250,43 +150,10 @@ namespace locamonda.Controllers
         }
 
         // ─── Edit POST ─────────────────────────
-
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //[Authorize(Roles = "Owner")]
-        //public async Task<IActionResult> Edit(Property updatedProperty)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        var user = await _userManager.GetUserAsync(User);
-        //        if (user == null) return Challenge();
-
-        //        var property = await _context.Properties
-        //            .FirstOrDefaultAsync(p => p.PropertyId == updatedProperty.PropertyId && p.OwnerId == user.Id);
-
-        //        if (property == null) return NotFound();
-
-        //        property.Title = updatedProperty.Title;
-        //        property.Description = updatedProperty.Description;
-        //        property.Price = updatedProperty.Price;
-        //        property.Rooms = updatedProperty.Rooms;
-        //        property.Bathrooms = updatedProperty.Bathrooms;
-        //        property.Status = updatedProperty.Status;
-        //        property.LocationId = updatedProperty.LocationId;
-        //        property.CategoryId = updatedProperty.CategoryId;
-
-        //        await _context.SaveChangesAsync();
-
-        //        return RedirectToAction(nameof(Index));
-        //    }
-
-        //    return View(updatedProperty);
-        //}
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Owner")]
-        public async Task<IActionResult> Edit(Property updatedProperty, List<IFormFile> imageFiles)
+        public async Task<IActionResult> Edit(Property updatedProperty, string LocationName, string CategoryName, List<IFormFile> imageFiles)
         {
             ModelState.Remove("Owner");
             ModelState.Remove("Location");
@@ -297,6 +164,7 @@ namespace locamonda.Controllers
             ModelState.Remove("Bookings");
             ModelState.Remove("Reviews");
             ModelState.Remove("Messages");
+
             if (ModelState.IsValid)
             {
                 var user = await _userManager.GetUserAsync(User);
@@ -308,6 +176,24 @@ namespace locamonda.Controllers
 
                 if (property == null) return NotFound();
 
+                // هندلة الموقع
+                var location = await _context.Locations.FirstOrDefaultAsync(l => l.City == LocationName);
+                if (location == null && !string.IsNullOrEmpty(LocationName))
+                {
+                    location = new Location { City = LocationName };
+                    _context.Locations.Add(location);
+                    await _context.SaveChangesAsync();
+                }
+
+                // هندلة القسم
+                var category = await _context.Categories.FirstOrDefaultAsync(c => c.Name == CategoryName);
+                if (category == null && !string.IsNullOrEmpty(CategoryName))
+                {
+                    category = new Category { Name = CategoryName };
+                    _context.Categories.Add(category);
+                    await _context.SaveChangesAsync();
+                }
+
                 // تحديث البيانات
                 property.Title = updatedProperty.Title;
                 property.Description = updatedProperty.Description;
@@ -315,8 +201,10 @@ namespace locamonda.Controllers
                 property.Rooms = updatedProperty.Rooms;
                 property.Bathrooms = updatedProperty.Bathrooms;
                 property.Status = updatedProperty.Status;
-                property.LocationId = updatedProperty.LocationId;
-                property.CategoryId = updatedProperty.CategoryId;
+                property.LocationId = location?.LocationId ?? updatedProperty.LocationId;
+                property.CategoryId = category?.CategoryId ?? updatedProperty.CategoryId;
+                property.Latitude = updatedProperty.Latitude;
+                property.Longitude = updatedProperty.Longitude;
 
                 // هندلة رفع الصور الجديدة
                 var oldPhotos = property.Photos.ToList();
@@ -371,19 +259,6 @@ namespace locamonda.Controllers
                     await _context.SaveChangesAsync();
                 }
 
-                if (!ModelState.IsValid)
-                {
-                    foreach (var error in ModelState)
-                    {
-                        Console.WriteLine(error.Key);
-
-                        foreach (var err in error.Value.Errors)
-                        {
-                            Console.WriteLine(err.ErrorMessage);
-                        }
-                    }
-                }
-
                 await _context.SaveChangesAsync();
                 return RedirectToAction("MyProperties");
             }
@@ -394,8 +269,8 @@ namespace locamonda.Controllers
 
             return View(updatedProperty);
         }
-        // ─── Delete (soft) ─────────────────────
 
+        // ─── Delete (soft) ─────────────────────
         [Authorize(Roles = "Owner")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -414,7 +289,6 @@ namespace locamonda.Controllers
         }
 
         // ─── My Properties ─────────────────────
-
         [Authorize(Roles = "Owner")]
         public async Task<IActionResult> MyProperties()
         {
@@ -425,7 +299,7 @@ namespace locamonda.Controllers
                 .Include(p => p.Location)
                 .Include(p => p.Category)
                 .Include(p => p.Photos)
-                .Where(p => p.OwnerId == user.Id)
+                .Where(p => p.OwnerId == user.Id && p.IsActive)
                 .ToListAsync();
 
             return View(properties);

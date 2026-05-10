@@ -1,4 +1,4 @@
-﻿@model locamonda.Models.Property
+@model locamonda.Models.Property
 
 @{
     ViewData["Title"] = "Edit Property";
@@ -27,19 +27,31 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-black text-[#1A2B49] mb-2">Location</label>
-                        <select asp-for="LocationId" asp-items="ViewBag.Locations"
-                                class="w-full px-6 py-4 bg-[#F8FAFC] rounded-2xl outline-none">
-                            <option value="">-- Select Location --</option>
-                        </select>
+                        <label class="block text-sm font-black text-[#1A2B49] mb-2">Location / City</label>
+                        <input list="locationList" name="LocationName" id="LocationNameInput" 
+                               value="@Model.Location?.City"
+                               class="w-full px-6 py-4 bg-[#F8FAFC] rounded-2xl outline-none focus:ring-2 focus:ring-[#1A2B49]/10" 
+                               placeholder="Type or select city..." />
+                        <datalist id="locationList">
+                            @foreach (var item in (SelectList)ViewBag.Locations)
+                            {
+                                <option value="@item.Text">@item.Text</option>
+                            }
+                        </datalist>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-black text-[#1A2B49] mb-2">Category</label>
-                        <select asp-for="CategoryId" asp-items="ViewBag.Categories"
-                                class="w-full px-6 py-4 bg-[#F8FAFC] rounded-2xl outline-none">
-                            <option value="">-- Select Category --</option>
-                        </select>
+                        <label class="block text-sm font-black text-[#1A2B49] mb-2">Property Type</label>
+                        <input list="categoryList" name="CategoryName" 
+                               value="@Model.Category?.Name"
+                               class="w-full px-6 py-4 bg-[#F8FAFC] rounded-2xl outline-none focus:ring-2 focus:ring-[#1A2B49]/10" 
+                               placeholder="Type or select type..." />
+                        <datalist id="categoryList">
+                            @foreach (var item in (SelectList)ViewBag.Categories)
+                            {
+                                <option value="@item.Text">@item.Text</option>
+                            }
+                        </datalist>
                     </div>
                 </div>
 
@@ -69,6 +81,10 @@
                         <i class="fas fa-chevron-down absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
                     </div>
                 </div>
+
+                <!-- Location Map Removed -->
+                <input type="hidden" asp-for="Latitude" id="Latitude" />
+                <input type="hidden" asp-for="Longitude" id="Longitude" />
 
                 <div class="space-y-4 pt-6 border-t border-slate-100">
                     <label class="block text-sm font-black text-[#1A2B49]">Current Photos</label>
@@ -116,47 +132,25 @@
     </div>
 </div>
 
-<script>
-    function previewImages() {
-        const container = document.getElementById('image-preview-container');
-        const files = document.getElementById('imageFiles').files;
-        container.innerHTML = '';
+@section Scripts {
+    <script>
+        function previewImages() {
+            const container = document.getElementById('image-preview-container');
+            const files = document.getElementById('imageFiles').files;
+            container.innerHTML = '';
 
-        if (files) {
-            Array.from(files).forEach(file => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const div = document.createElement('div');
-                    div.className = "relative h-32 w-full overflow-hidden rounded-2xl shadow-sm border border-slate-100";
-                    div.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover" />`;
-                    container.appendChild(div);
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-    }
-
-    function setHiddenId(inputName, dataListId, hiddenInputId) {
-        const input = document.querySelector(`input[name="${inputName}"]`);
-        const hiddenInput = document.getElementById(hiddenInputId);
-        const options = document.querySelectorAll(`#${dataListId} option`);
-
-        input.addEventListener("input", function () {
-            let found = false;
-
-            options.forEach(option => {
-                if (option.value === input.value) {
-                    hiddenInput.value = option.dataset.id;
-                    found = true;
-                }
-            });
-
-            if (!found) {
-                hiddenInput.value = "";
+            if (files) {
+                Array.from(files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const div = document.createElement('div');
+                        div.className = "relative h-32 w-full overflow-hidden rounded-2xl shadow-sm border border-slate-100";
+                        div.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover" />`;
+                        container.appendChild(div);
+                    };
+                    reader.readAsDataURL(file);
+                });
             }
-        });
-    }
-
-    setHiddenId("LocationName", "locationOptions", "LocationId");
-    setHiddenId("CategoryName", "categoryOptions", "CategoryId");
-</script>
+        }
+    </script>
+}
