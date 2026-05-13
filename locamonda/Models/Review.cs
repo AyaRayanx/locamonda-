@@ -22,8 +22,7 @@ namespace locamonda.Models
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
 
-        /* Foreign Keys */
-
+        // Foreign Keys
         [Required(ErrorMessage = "User is required")]
         public int UserId { get; set; }
 
@@ -31,7 +30,7 @@ namespace locamonda.Models
         public int PropertyId { get; set; }
 
 
-        /* Navigation Properties */
+        // Navigation Properties
 
         [ForeignKey("UserId")]
         public virtual Users User { get; set; } = null!;

@@ -1,0 +1,110 @@
+@model IEnumerable<locamonda.Models.Report>
+@{
+    ViewData["Title"] = "Incident Reports";
+}
+
+<div class="py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center gap-4 mb-8">
+            <a asp-action="Dashboard" class="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 hover:bg-slate-50 transition text-slate-600 no-underline">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900">Incident Reports</h1>
+                <p class="text-sm text-slate-500">Handle community complaints and investigations.</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-100">
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Reporter</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Target</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Reason</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @foreach (var report in Model)
+                        {
+                            <tr class="hover:bg-slate-50 transition">
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-600 text-[10px] border border-slate-200">
+                                            @report.Reporter?.Name.Substring(0, 1).ToUpper()
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-bold text-slate-900">@report.Reporter?.Name</p>
+                                            <p class="text-[10px] text-slate-400">@report.CreatedAt.ToString("MMM dd, yyyy")</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-5">
+                                    @if (report.PropertyId != null)
+                                    {
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-6 h-6 rounded bg-blue-50 flex items-center justify-center">
+                                                <i class="fas fa-home text-blue-500 text-[10px]"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs font-bold text-slate-800">Property</p>
+                                                <a asp-controller="Property" asp-action="Details" asp-route-id="@report.PropertyId" class="text-[10px] text-blue-600 hover:underline">ID: #@report.PropertyId</a>
+                                            </div>
+                                        </div>
+                                    }
+                                    else if (report.ReportedUserId != null)
+                                    {
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-6 h-6 rounded bg-purple-50 flex items-center justify-center">
+                                                <i class="fas fa-user text-purple-500 text-[10px]"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs font-bold text-slate-800">User</p>
+                                                <p class="text-[10px] text-slate-500">@report.ReportedUser?.Name</p>
+                                            </div>
+                                        </div>
+                                    }
+                                </td>
+                                <td class="px-6 py-5">
+                                    <p class="text-sm text-slate-600 max-w-xs line-clamp-2 italic">"@report.Reason"</p>
+                                </td>
+                                <td class="px-6 py-5">
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border
+                                        @(report.Status == "Pending" ? "bg-amber-50 text-amber-600 border-amber-100" : 
+                                          report.Status == "Resolved" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : 
+                                          "bg-slate-50 text-slate-400 border-slate-100")">
+                                        @report.Status
+                                    </span>
+                                </td>
+                                <td class="px-6 py-5 text-right">
+                                    @if (report.Status == "Pending")
+                                    {
+                                        <div class="flex justify-end gap-2">
+                                            <form asp-action="ResolveReport" asp-route-id="@report.ReportId" method="post">
+                                                <button type="submit" class="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-700 transition shadow-sm">
+                                                    Resolve
+                                                </button>
+                                            </form>
+                                            <form asp-action="DismissReport" asp-route-id="@report.ReportId" method="post">
+                                                <button type="submit" class="px-3 py-1.5 bg-white text-slate-600 border border-slate-200 rounded-lg text-[10px] font-bold hover:bg-slate-50 transition shadow-sm">
+                                                    Dismiss
+                                                </button>
+                                            </form>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Completed</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -55,18 +55,26 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div>
                         <label class="block text-sm font-black text-[#1A2B49] mb-2">Price (EGP)</label>
-                        <input asp-for="Price" class="w-full px-6 py-4 bg-[#F8FAFC] rounded-2xl outline-none" />
+                        <input asp-for="Price" required class="w-full px-6 py-4 bg-[#F8FAFC] rounded-2xl outline-none" />
+                        <span asp-validation-for="Price" class="text-red-500 text-[10px] font-bold"></span>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-black text-[#1A2B49] mb-2">Area (m²)</label>
+                        <input asp-for="Area" required class="w-full px-6 py-4 bg-[#F8FAFC] rounded-2xl outline-none" />
+                        <span asp-validation-for="Area" class="text-red-500 text-[10px] font-bold"></span>
                     </div>
                     <div>
                         <label class="block text-sm font-black text-[#1A2B49] mb-2">Rooms</label>
-                        <input asp-for="Rooms" class="w-full px-6 py-4 bg-[#F8FAFC] rounded-2xl outline-none" />
+                        <input asp-for="Rooms" required class="w-full px-6 py-4 bg-[#F8FAFC] rounded-2xl outline-none" />
+                        <span asp-validation-for="Rooms" class="text-red-500 text-[10px] font-bold"></span>
                     </div>
                     <div>
                         <label class="block text-sm font-black text-[#1A2B49] mb-2">Bathrooms</label>
-                        <input asp-for="Bathrooms" class="w-full px-6 py-4 bg-[#F8FAFC] rounded-2xl outline-none" />
+                        <input asp-for="Bathrooms" required class="w-full px-6 py-4 bg-[#F8FAFC] rounded-2xl outline-none" />
+                        <span asp-validation-for="Bathrooms" class="text-red-500 text-[10px] font-bold"></span>
                     </div>
                 </div>
 
@@ -85,6 +93,43 @@
                 <!-- Location Map Removed -->
                 <input type="hidden" asp-for="Latitude" id="Latitude" />
                 <input type="hidden" asp-for="Longitude" id="Longitude" />
+
+                <!-- Property Features Selection -->
+                <div class="flex flex-col gap-4 pt-4">
+                    <label class="text-sm font-black text-[#1A2B49]">Basic Features (Optional)</label>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 bg-[#F8FAFC] p-6 rounded-3xl">
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <input type="checkbox" asp-for="HasWifi" class="w-5 h-5 rounded border-slate-300 text-[#1A2B49] focus:ring-[#1A2B49]/20" />
+                            <span class="text-sm font-medium text-slate-600 group-hover:text-[#1A2B49] transition-colors">
+                                <i class="fas fa-wifi mr-1 text-xs opacity-60"></i> Wifi
+                            </span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <input type="checkbox" asp-for="HasAC" class="w-5 h-5 rounded border-slate-300 text-[#1A2B49] focus:ring-[#1A2B49]/20" />
+                            <span class="text-sm font-medium text-slate-600 group-hover:text-[#1A2B49] transition-colors">
+                                <i class="fas fa-snowflake mr-1 text-xs opacity-60"></i> AC
+                            </span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <input type="checkbox" asp-for="HasHeating" class="w-5 h-5 rounded border-slate-300 text-[#1A2B49] focus:ring-[#1A2B49]/20" />
+                            <span class="text-sm font-medium text-slate-600 group-hover:text-[#1A2B49] transition-colors">
+                                <i class="fas fa-fire mr-1 text-xs opacity-60"></i> Heating
+                            </span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <input type="checkbox" asp-for="HasGym" class="w-5 h-5 rounded border-slate-300 text-[#1A2B49] focus:ring-[#1A2B49]/20" />
+                            <span class="text-sm font-medium text-slate-600 group-hover:text-[#1A2B49] transition-colors">
+                                <i class="fas fa-dumbbell mr-1 text-xs opacity-60"></i> Gym
+                            </span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <input type="checkbox" asp-for="HasGarden" class="w-5 h-5 rounded border-slate-300 text-[#1A2B49] focus:ring-[#1A2B49]/20" />
+                            <span class="text-sm font-medium text-slate-600 group-hover:text-[#1A2B49] transition-colors">
+                                <i class="fas fa-leaf mr-1 text-xs opacity-60"></i> Garden
+                            </span>
+                        </label>
+                    </div>
+                </div>
 
                 <div class="space-y-4 pt-6 border-t border-slate-100">
                     <label class="block text-sm font-black text-[#1A2B49]">Current Photos</label>

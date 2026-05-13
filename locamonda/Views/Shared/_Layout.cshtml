@@ -39,42 +39,45 @@
 
                         @if (SignInManager.IsSignedIn(User))
                         {
-                            
-                                @if (User.IsInRole("Owner"))
-                                {
+                            if (User.IsInRole("Admin"))
+                            {
+                                <li>
+                                    <a asp-controller="Admin" asp-action="Dashboard" class="text-blue-600 font-bold hover:text-blue-800 transition">Admin Dashboard</a>
+                                </li>
+                            }
+
+                            if (User.IsInRole("Owner"))
+                            {
                                 <li>
                                     <a asp-controller="Booking" asp-action="OwnerBookings" class="hover:text-slate-800 transition">Manage Booking</a>
                                 </li>
 
-                                    <li>
+                                <li>
                                     <a asp-controller="Property" asp-action="MyProperties"
                                        class="text-slate-800 font-bold border-l pl-4 border-gray-300 hover:text-slate-600 transition-colors">
-                                            Manage My Properties
+                                        Manage My Properties
+                                    </a>
+                                </li>
+                            }
+                            else if (!User.IsInRole("Admin") && !User.IsInRole("Owner"))
+                            {
+                                @if (ViewData["HideBooking"] == null || !(bool)ViewData["HideBooking"])
+                                {
+                                    <li>
+                                        <a asp-controller="Booking" asp-action="Index" asp-route-tab="bookings"
+                                           class="hover:text-slate-800 transition font-medium">
+                                            My Bookings
                                         </a>
                                     </li>
-                          
+                                    <li>
+                                        <a asp-controller="Favorite" asp-action="Index" class="hover:text-slate-800 transition">
+                                            Favorites
+                                        </a>
+                                    </li>
                                 }
-                                else
-                                {
-                                    @if (ViewData["HideBooking"] == null || !(bool)ViewData["HideBooking"])
-                                    {
-                                        <li>
-                                            <a asp-controller="Booking" asp-action="Index" asp-route-tab="bookings"
-                                            class="hover:text-slate-800 transition font-medium">
-                                                My Bookings
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a asp-controller="Favorite" asp-action="Index" class="hover:text-slate-800 transition">
-                                                Favorites
-                                            </a>
-                                        </li>
-                                    }
-                                }
-                            
+                            }
 
                             @* Favorites تظهر دايماً بره شرط الإخفاء لو حابة *@
-                            
                         }
                     </ul>
                     @*User Area*@
@@ -87,7 +90,7 @@
                                     @* عرض صورة البروفايل أو صورة افتراضية لو مش حاطط صورة *@
                                     @if (currentUser != null && !string.IsNullOrEmpty(currentUser.ProfilePicture))
                                     {
-                                        <img src="~/uploads/@currentUser.ProfilePicture"
+                                        <img src="@currentUser.ProfilePicture"
                                              class="w-8 h-8 rounded-full object-cover border border-gray-200"
                                              alt="Profile">
                                     }

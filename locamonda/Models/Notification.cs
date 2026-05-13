@@ -9,9 +9,9 @@ namespace locamonda.Models
         public int NotificationId { get; set; }
 
         [Required]
-        [StringLength(50)]
-        [RegularExpression("NewMessage|BookingConfirmed|BookingCancelled|NewReview|NewBooking")]
-        [Column(TypeName = "nvarchar(50)")]
+        [StringLength(100)]
+        [RegularExpression("BookingConfirmed|BookingCancelled|NewReview|NewBooking|AccountActivated|AccountDeactivated|PropertyApproved|PropertyRejected|NewProperty|NewReport")]
+        [Column(TypeName = "nvarchar(100)")]
         public string Type { get; set; } = string.Empty;
 
         [Required]
@@ -24,12 +24,11 @@ namespace locamonda.Models
         [DataType(DataType.DateTime)]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        /* Foreign Keys */
-
+        // Foreign Keys
         [Required]
         public int UserId { get; set; }
 
-        /* Navigation Properties */
+        // Navigation Properties
 
         [ForeignKey("UserId")]
         public Users User { get; set; } = null!;

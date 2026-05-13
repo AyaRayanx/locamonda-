@@ -1,8 +1,13 @@
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace locamonda.Models
 {
+    [Index(nameof(LocationId))]
+    [Index(nameof(CategoryId))]
+    [Index(nameof(OwnerId))]
+    [Index(nameof(Price))]
     public class Property
     {
         [Key]
@@ -18,16 +23,22 @@ namespace locamonda.Models
         [Column(TypeName = "nvarchar(2000)")]
         public string Description { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Price is required")]
         [Range(0.01, 99999999.99)]
         [Column(TypeName = "decimal(18,2)")]
         public decimal Price { get; set; }
 
+        [Required(ErrorMessage = "Number of rooms is required")]
         [Range(1, 50)]
         public int Rooms { get; set; }
 
+        [Required(ErrorMessage = "Number of bathrooms is required")]
         [Range(1, 20)]
         public int Bathrooms { get; set; }
+
+        [Required(ErrorMessage = "Property area is required")]
+        [Range(1, 10000)]
+        public double Area { get; set; }
 
         [Required]
         [StringLength(20)]
@@ -38,9 +49,16 @@ namespace locamonda.Models
         public DateTime DateAdded { get; set; } = DateTime.Now;
 
         public bool IsActive { get; set; } = true;
+        public bool IsApproved { get; set; } = false;
 
-        /* Foreign Keys */
+        // Features
+        public bool HasWifi { get; set; }
+        public bool HasAC { get; set; }
+        public bool HasHeating { get; set; }
+        public bool HasGym { get; set; }
+        public bool HasGarden { get; set; }
 
+        // Foreign Keys
         [Required]
         public int OwnerId { get; set; }
 
@@ -53,8 +71,7 @@ namespace locamonda.Models
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
 
-        /* Navigation Properties */
-
+        // Navigation Properties
         [ForeignKey("OwnerId")]
         public Users Owner { get; set; } = null!;
 
@@ -65,10 +82,8 @@ namespace locamonda.Models
         public Category Category { get; set; } = null!;
 
         public ICollection<Photo> Photos { get; set; } = new List<Photo>();
-        public ICollection<PropertyAmenity> PropertyAmenities { get; set; } = new List<PropertyAmenity>();
         public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
         public ICollection<Review> Reviews { get; set; } = new List<Review>();
-        public ICollection<Message> Messages { get; set; } = new List<Message>();
     }
 }

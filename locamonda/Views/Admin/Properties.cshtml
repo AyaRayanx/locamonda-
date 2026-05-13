@@ -1,0 +1,94 @@
+@model IEnumerable<locamonda.Models.Property>
+@{
+    ViewData["Title"] = "Property Moderation";
+}
+
+<div class="py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center gap-4 mb-8">
+            <a asp-action="Dashboard" class="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 hover:bg-slate-50 transition text-slate-600 no-underline">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900">Property Moderation</h1>
+                <p class="text-sm text-slate-500">Review and approve new listings.</p>
+            </div>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="bg-white rounded-3xl p-12 text-center border border-slate-100 shadow-sm">
+                <div class="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-check-double text-emerald-600 text-3xl"></i>
+                </div>
+                <h2 class="text-xl font-bold text-slate-900 mb-2">All Caught Up!</h2>
+                <p class="text-slate-500">There are no pending property listings requiring review at this time.</p>
+                <a asp-action="Dashboard" class="inline-block mt-6 px-6 py-2 bg-slate-900 text-white rounded-xl font-bold hover:bg-black transition">Back to Dashboard</a>
+            </div>
+        }
+        else
+        {
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                @foreach (var property in Model)
+                {
+                    <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-xl transition-all duration-300 group">
+                        <div class="relative h-48">
+                            @if (property.Photos.Any())
+                            {
+                                <img src="@property.Photos.First().PhotoUrl" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                            }
+                            else
+                            {
+                                <div class="w-full h-full bg-slate-100 flex items-center justify-center">
+                                    <i class="fas fa-image text-slate-300 text-4xl"></i>
+                                </div>
+                            }
+                            <div class="absolute top-4 left-4">
+                                <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">Pending</span>
+                            </div>
+                        </div>
+                        
+                        <div class="p-6">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <h3 class="font-bold text-slate-900 text-lg mb-1">@property.Title</h3>
+                                    <p class="text-xs text-slate-500 flex items-center gap-1">
+                                        <i class="fas fa-map-marker-alt text-slate-400"></i> @property.Location?.City
+                                    </p>
+                                </div>
+                                <p class="text-lg font-black text-slate-900">$@property.Price</p>
+                            </div>
+
+                            <div class="flex items-center gap-3 mb-6 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                                <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center font-bold text-slate-700 text-xs shadow-sm">
+                                    @property.Owner?.Name.Substring(0, 1)
+                                </div>
+                                <div>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Owner</p>
+                                    <p class="text-xs font-bold text-slate-700">@property.Owner?.Name</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <form asp-action="ApproveProperty" asp-route-id="@property.PropertyId" method="post">
+                                    <button type="submit" class="w-full py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-xs hover:bg-emerald-700 transition shadow-lg shadow-emerald-600/20">
+                                        Approve
+                                    </button>
+                                </form>
+                                <form asp-action="RejectProperty" asp-route-id="@property.PropertyId" method="post">
+                                    <button type="submit" class="w-full py-2.5 bg-white text-rose-600 border border-rose-100 rounded-xl font-bold text-xs hover:bg-rose-50 transition">
+                                        Reject
+                                    </button>
+                                </form>
+                            </div>
+                            
+                            <a asp-controller="Property" asp-action="Details" asp-route-id="@property.PropertyId" class="block text-center mt-4 text-xs font-bold text-slate-400 hover:text-slate-600 transition underline underline-offset-4">
+                                View Full Listing Details
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

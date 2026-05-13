@@ -13,26 +13,61 @@ namespace locamonda.Controllers
     {
         private readonly AppDbContext _context;
         private readonly UserManager<Users> _userManager;
-
-        // اضافه
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private const string PROPERTY_IMAGE_PATH = "images/property";
 
         public PropertyController(AppDbContext context, UserManager<Users> userManager, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
             _userManager = userManager;
-             //اضافه
             _webHostEnvironment = webHostEnvironment;
         }
 
-        // ─── Index ─────────────────────────────
+        #region --- Helpers ---
+
+        private async Task NotifyAdmins(string type, string message)
+        {
+            var admins = await _userManager.GetUsersInRoleAsync("Admin");
+            foreach (var admin in admins)
+            {
+                _context.Notifications.Add(new Notification
+                {
+                    UserId = admin.Id,
+                    Type = type,
+                    NotificationMessage = message,
+                    CreatedAt = DateTime.Now,
+                    IsRead = false
+                });
+            }
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task<string> SaveImage(IFormFile file)
+        {
+            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+            var uploadPath = Path.Combine(_webHostEnvironment.WebRootPath, PROPERTY_IMAGE_PATH);
+            if (!Directory.Exists(uploadPath)) Directory.CreateDirectory(uploadPath);
+            
+            var filePath = Path.Combine(uploadPath, fileName);
+            using (var stream = new FileStream(filePath, FileMode.Create)) 
+            { 
+                await file.CopyToAsync(stream); 
+            }
+            return "/" + PROPERTY_IMAGE_PATH + "/" + fileName;
+        }
+
+        #endregion
+
+        #region --- Public Listings ---
+
+        // All properties for customers
         public IActionResult Index(string city, decimal? minPrice, decimal? maxPrice, int? categoryId)
         {
             var properties = _context.Properties
                 .Include(p => p.Location)
                 .Include(p => p.Category)
                 .Include(p => p.Photos)
-                .Where(p => p.IsActive && p.Status == "Available")
+                .Where(p => p.IsActive && p.IsApproved && p.Status == "Available")
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(city))
@@ -48,7 +83,7 @@ namespace locamonda.Controllers
             return View(properties.ToList());
         }
 
-        // ─── Details ───────────────────────────
+        // Single property details
         public IActionResult Details(int id)
         {
             var property = _context.Properties
@@ -57,7 +92,6 @@ namespace locamonda.Controllers
                 .Include(p => p.Owner)
                 .Include(p => p.Photos)
                 .Include(p => p.Reviews)
-                .Include(p => p.PropertyAmenities).ThenInclude(pa => pa.Amenity)
                 .FirstOrDefault(p => p.PropertyId == id);
 
             if (property == null) return NotFound();
@@ -65,18 +99,37 @@ namespace locamonda.Controllers
             return View(property);
         }
 
-        // ─── Create GET ────────────────────────
+        #endregion
+
+        #region --- Owner Management ---
+
+        // List properties owned by the current user
+        [Authorize(Roles = "Owner")]
+        public async Task<IActionResult> MyProperties()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
+
+            var properties = await _context.Properties
+                .Include(p => p.Location)
+                .Include(p => p.Category)
+                .Include(p => p.Photos)
+                .Where(p => p.OwnerId == user.Id && p.IsActive)
+                .ToListAsync();
+
+            return View(properties);
+        }
+
+        // Create Property (GET)
         [Authorize(Roles = "Owner")]
         public IActionResult Create()
         {
             ViewBag.Locations = new SelectList(_context.Locations, "LocationId", "City");
             ViewBag.Categories = new SelectList(_context.Categories, "CategoryId", "Name");
-            ViewBag.Amenities = _context.Amenities.ToList();
-
             return View();
         }
 
-        // ─── Create POST ───────────────────────
+        // Create Property (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Owner")]
@@ -85,6 +138,9 @@ namespace locamonda.Controllers
             ModelState.Clear();
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();
+
+            CategoryName = CategoryName?.Trim();
+            LocationName = LocationName?.Trim();
 
             var location = await _context.Locations.FirstOrDefaultAsync(l => l.City == LocationName);
             if (location == null && !string.IsNullOrEmpty(LocationName))
@@ -102,11 +158,20 @@ namespace locamonda.Controllers
                 await _context.SaveChangesAsync();
             }
 
+            if (location == null || category == null)
+            {
+                ModelState.AddModelError(string.Empty, "Please select or type a valid Location and Property Type.");
+                ViewBag.Locations = new SelectList(_context.Locations, "LocationId", "City");
+                ViewBag.Categories = new SelectList(_context.Categories, "CategoryId", "Name");
+                return View(property);
+            }
+
             property.OwnerId = user.Id;
-            property.LocationId = location?.LocationId ?? 0;
-            property.CategoryId = category?.CategoryId ?? 0;
+            property.LocationId = location.LocationId;
+            property.CategoryId = category.CategoryId;
             property.DateAdded = DateTime.Now;
             property.IsActive = true;
+            property.IsApproved = false; 
             property.Status = "Available";
 
             _context.Properties.Add(property);
@@ -116,20 +181,19 @@ namespace locamonda.Controllers
             {
                 foreach (var file in imageFiles)
                 {
-                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-                    var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/property");
-                    if (!Directory.Exists(uploadPath)) Directory.CreateDirectory(uploadPath);
-                    var filePath = Path.Combine(uploadPath, fileName);
-                    using (var stream = new FileStream(filePath, FileMode.Create)) { await file.CopyToAsync(stream); }
-                    _context.Photos.Add(new Photo { PropertyId = property.PropertyId, PhotoUrl = "/images/property/" + fileName });
+                    string photoUrl = await SaveImage(file);
+                    _context.Photos.Add(new Photo { PropertyId = property.PropertyId, PhotoUrl = photoUrl, IsMain = (file == imageFiles.First()) });
                 }
                 await _context.SaveChangesAsync();
             }
 
+            await NotifyAdmins("NewProperty", $"New property '{property.Title}' added by {user.UserName} and needs approval.");
+
+            TempData["Success"] = "Property added successfully and is pending admin approval.";
             return RedirectToAction(nameof(MyProperties));
         }
 
-        // ─── Edit GET ──────────────────────────
+        // Edit Property (GET)
         [Authorize(Roles = "Owner")]
         public async Task<IActionResult> Edit(int id)
         {
@@ -149,128 +213,87 @@ namespace locamonda.Controllers
             return View(property);
         }
 
-        // ─── Edit POST ─────────────────────────
+        // Edit Property (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Owner")]
         public async Task<IActionResult> Edit(Property updatedProperty, string LocationName, string CategoryName, List<IFormFile> imageFiles)
         {
-            ModelState.Remove("Owner");
-            ModelState.Remove("Location");
-            ModelState.Remove("Category");
-            ModelState.Remove("Photos");
-            ModelState.Remove("PropertyAmenities");
-            ModelState.Remove("Favorites");
-            ModelState.Remove("Bookings");
-            ModelState.Remove("Reviews");
-            ModelState.Remove("Messages");
+            ModelState.Clear(); // Using simple model state clear since we handle mapping manually
 
-            if (ModelState.IsValid)
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
+
+            var property = await _context.Properties
+               .Include(p => p.Photos)
+               .FirstOrDefaultAsync(p => p.PropertyId == updatedProperty.PropertyId && p.OwnerId == user.Id);
+
+            if (property == null) return NotFound();
+
+            CategoryName = CategoryName?.Trim();
+            LocationName = LocationName?.Trim();
+
+            var location = await _context.Locations.FirstOrDefaultAsync(l => l.City == LocationName);
+            if (location == null && !string.IsNullOrEmpty(LocationName))
             {
-                var user = await _userManager.GetUserAsync(User);
-                if (user == null) return Challenge();
+                location = new Location { City = LocationName };
+                _context.Locations.Add(location);
+                await _context.SaveChangesAsync();
+            }
 
-                var property = await _context.Properties
-                   .Include(p => p.Photos)
-                   .FirstOrDefaultAsync(p => p.PropertyId == updatedProperty.PropertyId && p.OwnerId == user.Id);
+            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Name == CategoryName);
+            if (category == null && !string.IsNullOrEmpty(CategoryName))
+            {
+                category = new Category { Name = CategoryName };
+                _context.Categories.Add(category);
+                await _context.SaveChangesAsync();
+            }
 
-                if (property == null) return NotFound();
+            // Update basic fields
+            property.Title = updatedProperty.Title;
+            property.Description = updatedProperty.Description;
+            property.Price = updatedProperty.Price;
+            property.Area = updatedProperty.Area;
+            property.Rooms = updatedProperty.Rooms;
+            property.Bathrooms = updatedProperty.Bathrooms;
+            property.Status = updatedProperty.Status;
+            property.LocationId = location?.LocationId ?? updatedProperty.LocationId;
+            property.CategoryId = category?.CategoryId ?? updatedProperty.CategoryId;
+            property.Latitude = updatedProperty.Latitude;
+            property.Longitude = updatedProperty.Longitude;
+            
+            // Features
+            property.HasWifi = updatedProperty.HasWifi;
+            property.HasAC = updatedProperty.HasAC;
+            property.HasHeating = updatedProperty.HasHeating;
+            property.HasGym = updatedProperty.HasGym;
+            property.HasGarden = updatedProperty.HasGarden;
 
-                // هندلة الموقع
-                var location = await _context.Locations.FirstOrDefaultAsync(l => l.City == LocationName);
-                if (location == null && !string.IsNullOrEmpty(LocationName))
-                {
-                    location = new Location { City = LocationName };
-                    _context.Locations.Add(location);
-                    await _context.SaveChangesAsync();
-                }
-
-                // هندلة القسم
-                var category = await _context.Categories.FirstOrDefaultAsync(c => c.Name == CategoryName);
-                if (category == null && !string.IsNullOrEmpty(CategoryName))
-                {
-                    category = new Category { Name = CategoryName };
-                    _context.Categories.Add(category);
-                    await _context.SaveChangesAsync();
-                }
-
-                // تحديث البيانات
-                property.Title = updatedProperty.Title;
-                property.Description = updatedProperty.Description;
-                property.Price = updatedProperty.Price;
-                property.Rooms = updatedProperty.Rooms;
-                property.Bathrooms = updatedProperty.Bathrooms;
-                property.Status = updatedProperty.Status;
-                property.LocationId = location?.LocationId ?? updatedProperty.LocationId;
-                property.CategoryId = category?.CategoryId ?? updatedProperty.CategoryId;
-                property.Latitude = updatedProperty.Latitude;
-                property.Longitude = updatedProperty.Longitude;
-
-                // هندلة رفع الصور الجديدة
-                var oldPhotos = property.Photos.ToList();
-                foreach (var oldPhoto in oldPhotos)
+            // Handle new photos
+            if (imageFiles != null && imageFiles.Count > 0)
+            {
+                // Delete old photos from DB and File System
+                foreach (var oldPhoto in property.Photos.ToList())
                 {
                     string oldFilePath = Path.Combine(_webHostEnvironment.WebRootPath, oldPhoto.PhotoUrl.TrimStart('/'));
-                    if (System.IO.File.Exists(oldFilePath))
-                        System.IO.File.Delete(oldFilePath);
-
+                    if (System.IO.File.Exists(oldFilePath)) System.IO.File.Delete(oldFilePath);
                     _context.Photos.Remove(oldPhoto);
                 }
 
-                // ✅ احفظ المسح الأول
-                await _context.SaveChangesAsync();
-
-                // بعدين ضيف الصور الجديدة
-                if (imageFiles != null && imageFiles.Count > 0)
+                // Add new ones
+                foreach (var file in imageFiles)
                 {
-                    string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
-                    if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-
-                    // امسح الصورة الـ Main القديمة بس
-                    var mainPhoto = property.Photos.FirstOrDefault(p => p.IsMain);
-                    if (mainPhoto != null)
-                    {
-                        string oldFilePath = Path.Combine(_webHostEnvironment.WebRootPath, mainPhoto.PhotoUrl.TrimStart('/'));
-                        if (System.IO.File.Exists(oldFilePath))
-                            System.IO.File.Delete(oldFilePath);
-
-                        _context.Photos.Remove(mainPhoto);
-                        await _context.SaveChangesAsync();
-                    }
-
-                    // ضيف الصورة الجديدة كـ Main
-                    foreach (var file in imageFiles)
-                    {
-                        string uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-                        string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                        using (var fileStream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await file.CopyToAsync(fileStream);
-                        }
-
-                        _context.Photos.Add(new Photo
-                        {
-                            PhotoUrl = "/uploads/" + uniqueFileName,
-                            PropertyId = property.PropertyId,
-                            IsMain = true
-                        });
-                    }
-                    await _context.SaveChangesAsync();
+                    string photoUrl = await SaveImage(file);
+                    _context.Photos.Add(new Photo { PropertyId = property.PropertyId, PhotoUrl = photoUrl, IsMain = (file == imageFiles.First()) });
                 }
-
-                await _context.SaveChangesAsync();
-                return RedirectToAction("MyProperties");
             }
 
-            // الكود السحري هنا: لازم تملا الـ ViewBag تاني لو حصل أي غلط في الفورم ورجعنا لنفس الصفحة
-            ViewBag.Locations = new SelectList(_context.Locations, "LocationId", "City");
-            ViewBag.Categories = new SelectList(_context.Categories, "CategoryId", "Name");
-
-            return View(updatedProperty);
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Property updated successfully!";
+            return RedirectToAction(nameof(MyProperties));
         }
 
-        // ─── Delete (soft) ─────────────────────
+        // Soft Delete (Archive)
         [Authorize(Roles = "Owner")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -285,24 +308,10 @@ namespace locamonda.Controllers
             property.IsActive = false;
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index));
+            TempData["Success"] = "Property has been archived.";
+            return RedirectToAction(nameof(MyProperties));
         }
 
-        // ─── My Properties ─────────────────────
-        [Authorize(Roles = "Owner")]
-        public async Task<IActionResult> MyProperties()
-        {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null) return Challenge();
-
-            var properties = await _context.Properties
-                .Include(p => p.Location)
-                .Include(p => p.Category)
-                .Include(p => p.Photos)
-                .Where(p => p.OwnerId == user.Id && p.IsActive)
-                .ToListAsync();
-
-            return View(properties);
-        }
+        #endregion
     }
 }

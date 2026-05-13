@@ -19,7 +19,7 @@ namespace locamonda.Controllers
             _userManager = userManager;
         }
 
-        // ─── Index ─────────────────────────────
+        // List Notifications
 
         public async Task<IActionResult> Index()
         {
@@ -34,7 +34,7 @@ namespace locamonda.Controllers
             return View(notifications);
         }
 
-        // ─── Mark One as Read ─────────────────
+        // Mark Read
 
         public async Task<IActionResult> MarkRead(int id)
         {
@@ -52,7 +52,7 @@ namespace locamonda.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ─── Mark All as Read ─────────────────
+        // Mark All
 
         public async Task<IActionResult> MarkAllRead()
         {
@@ -71,7 +71,7 @@ namespace locamonda.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ─── Delete ───────────────────────────
+        // Delete Notification
 
         public async Task<IActionResult> Delete(int id)
         {

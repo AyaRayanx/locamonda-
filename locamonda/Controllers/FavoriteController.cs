@@ -19,7 +19,7 @@ namespace locamonda.Controllers
             _userManager = userManager;
         }
 
-        // ─── Index ─────────────────────────────
+        // List Favorites
         [Authorize(Roles = "Customer")]
         public async Task<IActionResult> Index()
         {
@@ -37,7 +37,7 @@ namespace locamonda.Controllers
             return View(favorites);
         }
 
-        // ─── Add to Favorites ─────────────────
+        // Add Favorite
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -64,7 +64,7 @@ namespace locamonda.Controllers
             return RedirectToAction("Details", "Property", new { id = propertyId });
         }
 
-        // ─── Remove ────────────────────────────
+        // Remove Favorite
 
         public async Task<IActionResult> Remove(int favoriteId)
         {

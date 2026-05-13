@@ -19,7 +19,7 @@ namespace locamonda.Controllers
             _userManager = userManager;
         }
 
-        // ───────── NOTIFICATION HELPER ─────────
+        // Notification Helper
         private async Task AddNotification(int userId, string type, string message)
         {
             var notification = new Notification
@@ -35,7 +35,7 @@ namespace locamonda.Controllers
             await _context.SaveChangesAsync();
         }
 
-        // ───────── AUTO CANCEL ─────────
+        // Auto Cancel
         private async Task AutoCancelExpiredBookings()
         {
             var expired = await _context.Bookings
@@ -67,7 +67,7 @@ namespace locamonda.Controllers
             await _context.SaveChangesAsync();
         }
 
-        // ───────── USER BOOKINGS ─────────
+        // User Bookings
         public async Task<IActionResult> Index()
         {
             await AutoCancelExpiredBookings();
@@ -86,9 +86,14 @@ namespace locamonda.Controllers
             return View(bookings);
         }
 
-        // ───────── CREATE GET ─────────
+        // Create Booking
         public async Task<IActionResult> Create(int propertyId)
         {
+            if (User.IsInRole("Admin") || User.IsInRole("Owner"))
+            {
+                return Forbid();
+            }
+
             var property = await _context.Properties
                 .FirstOrDefaultAsync(p => p.PropertyId == propertyId);
 
@@ -99,11 +104,15 @@ namespace locamonda.Controllers
             return View(new Booking { PropertyId = propertyId });
         }
 
-        // ───────── CREATE POST ─────────
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Booking booking)
         {
+            if (User.IsInRole("Admin") || User.IsInRole("Owner"))
+            {
+                return Forbid();
+            }
+
             var property = await _context.Properties
                 .FirstOrDefaultAsync(p => p.PropertyId == booking.PropertyId);
 
@@ -144,12 +153,12 @@ namespace locamonda.Controllers
                 $"New booking request for your property '{property.Title}'"
             );
 
-            TempData["Success"] = "Booking sent successfully";
+            TempData["BookingSuccess"] = "Booking sent successfully";
 
             return RedirectToAction("Create", new { propertyId = booking.PropertyId });
         }
 
-        // ───────── USER CANCEL ─────────
+        // User Cancel
         public async Task<IActionResult> Cancel(int id)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -174,7 +183,7 @@ namespace locamonda.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ───────── OWNER CONFIRM ─────────
+        // Owner Confirm
         [Authorize(Roles = "Owner")]
         public async Task<IActionResult> Confirm(int id)
         {
@@ -203,7 +212,7 @@ namespace locamonda.Controllers
             return RedirectToAction(nameof(OwnerBookings));
         }
 
-        // ───────── OWNER REJECT ─────────
+        // Owner Reject
         [Authorize(Roles = "Owner")]
         public async Task<IActionResult> Reject(int id)
         {
@@ -231,7 +240,7 @@ namespace locamonda.Controllers
             return RedirectToAction(nameof(OwnerBookings));
         }
 
-        // ───────── OWNER DONE ─────────
+        // Owner Done
         [Authorize(Roles = "Owner")]
         public async Task<IActionResult> MarkAsDone(int id)
         {
@@ -256,7 +265,7 @@ namespace locamonda.Controllers
             return RedirectToAction(nameof(OwnerBookings));
         }
 
-        // ───────── OWNER VIEW ─────────
+        // Owner View
         [Authorize(Roles = "Owner")]
         public async Task<IActionResult> OwnerBookings()
         {

@@ -1,0 +1,99 @@
+@model IEnumerable<locamonda.Models.Users>
+@{
+    ViewData["Title"] = "User Management";
+}
+
+<div class="py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center gap-4 mb-8">
+            <a asp-action="Dashboard" class="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 hover:bg-slate-50 transition text-slate-600 no-underline">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="flex-1">
+                <h1 class="text-2xl font-bold text-slate-900">User Management</h1>
+                <p class="text-sm text-slate-500">Manage account access and roles.</p>
+            </div>
+            <a asp-action="AddAdmin" class="bg-slate-900 text-white px-6 py-3 rounded-2xl font-bold text-sm hover:bg-slate-800 transition shadow-lg no-underline flex items-center gap-2">
+                <i class="fas fa-user-plus text-xs"></i> Add New Admin
+            </a>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-100">
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">User</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Account Type</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Joined</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @foreach (var user in Model)
+                        {
+                            <tr class="hover:bg-slate-50 transition">
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center font-bold text-blue-600 border border-blue-100">
+                                            @user.Name.Substring(0, 1).ToUpper()
+                                        </div>
+                                        <div>
+                                            <p class="font-bold text-slate-900">@user.Name</p>
+                                            <p class="text-xs text-slate-500">@user.Email</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-5">
+                                    @{
+                                        var badgeColor = user.AccountType switch
+                                        {
+                                            "Admin" => "bg-rose-50 text-rose-600 border border-rose-100",
+                                            "Owner" => "bg-purple-50 text-purple-600 border border-purple-100",
+                                            _ => "bg-sky-50 text-sky-600 border border-sky-100"
+                                        };
+                                    }
+                                    <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest @badgeColor">
+                                        @user.AccountType
+                                    </span>
+                                </td>
+                                <td class="px-6 py-5">
+                                    @if (user.IsActive)
+                                    {
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-100">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Active
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-100">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Blocked
+                                        </span>
+                                    }
+                                </td>
+                                <td class="px-6 py-5 text-slate-500 text-sm">
+                                    @user.CreatedAt.ToString("MMM dd, yyyy")
+                                </td>
+                                <td class="px-6 py-5 text-right">
+                                    @if (user.AccountType != "Admin")
+                                    {
+                                        <form asp-action="ToggleUserStatus" asp-route-id="@user.Id" method="post" class="inline">
+                                            <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm border @(user.IsActive ? "bg-white text-rose-600 border-rose-100 hover:bg-rose-50" : "bg-emerald-600 text-white border-emerald-700 hover:bg-emerald-700")">
+                                                @(user.IsActive ? "Block Access" : "Restore Access")
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Protected</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -19,13 +19,8 @@ namespace locamonda.Controllers
             _userManager = userManager;
         }
 
-        // ─── Create Review ────────────────────────────────────────
+        // Create Review
 
-        //public IActionResult Create(int propertyId)
-        //{
-        //    ViewBag.PropertyId = propertyId;
-        //    return View();
-        //}
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -42,7 +37,7 @@ namespace locamonda.Controllers
 
             return RedirectToAction("Details", "Property", new { id = review.PropertyId });
         }
-        // ─── Delete Review ────────────────────────────────────────
+        // Delete Review
 
         public async Task<IActionResult> Delete(int id)
         {

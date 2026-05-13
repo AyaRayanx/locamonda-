@@ -1,5 +1,6 @@
 using locamonda.Models;
 using locamonda.Data;
+using locamonda.Middleware;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -40,18 +41,19 @@ builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
-// SEED ROLES
+// SEED DATA
 using (var scope = app.Services.CreateScope())
 {
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
-    string[] roles = { "Owner", "Customer" };
-
-    foreach (var role in roles)
-    {
-        if (!roleManager.RoleExistsAsync(role).Result)
-        {
-            roleManager.CreateAsync(new IdentityRole<int>(role)).Wait();
-        }
+    var services = scope.ServiceProvider;
+    try {
+        var context = services.GetRequiredService<AppDbContext>();
+        var userManager = services.GetRequiredService<UserManager<Users>>();
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole<int>>>();
+        
+        var seeder = new DataSeeder(context, userManager, roleManager);
+        seeder.SeedAll().Wait();
+    } catch (Exception ex) {
+        Console.WriteLine("An error occurred while seeding the database: " + ex.Message);
     }
 }
 
@@ -71,6 +73,7 @@ app.UseRouting();
 app.UseSession();   // MUST be after UseRouting, before auth
 
 app.UseAuthentication(); // Added
+app.UseIsActiveCheck();
 app.UseAuthorization();
 
 // ROUTES

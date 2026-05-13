@@ -1,0 +1,135 @@
+@model locamonda.Models.Users
+@{
+    ViewData["Title"] = Model.Name + "'s Profile";
+}
+
+<div class="min-h-screen bg-gray-50 py-12">
+    <div class="max-w-4xl mx-auto px-6">
+        <!-- Profile Header Card -->
+        <div class="bg-white rounded-[2.5rem] shadow-xl shadow-blue-500/5 border border-slate-100 overflow-hidden mb-10 transform hover:scale-[1.01] transition-all duration-500">
+            <div class="h-48 bg-gradient-to-r from-slate-900 to-slate-800 relative">
+                <div class="absolute -bottom-16 left-10 p-2 bg-white rounded-3xl shadow-lg">
+                    @if (!string.IsNullOrEmpty(Model.ProfilePicture))
+                    {
+                        <img src="@Url.Content(Model.ProfilePicture)" class="w-32 h-32 rounded-2xl object-cover" alt="Profile">
+                    }
+                    else
+                    {
+                        <div class="w-32 h-32 rounded-2xl bg-slate-100 flex items-center justify-center text-4xl text-slate-300">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    }
+                </div>
+                <div class="absolute top-6 right-10">
+                    <span class="px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-[0.2em] border border-white/10">
+                        @Model.AccountType
+                    </span>
+                    @if (User.Identity.IsAuthenticated && User.Identity.Name != Model.UserName)
+                    {
+                        <a asp-controller="Report" asp-action="Create" asp-route-userId="@Model.Id"
+                           class="absolute top-0 right-0 mt-6 mr-10 px-4 py-1.5 rounded-full bg-red-500/20 backdrop-blur-md text-red-400 text-[10px] font-black uppercase tracking-[0.2em] border border-red-500/10 hover:bg-red-500 hover:text-white transition no-underline">
+                            <i class="fas fa-flag mr-1"></i> Report User
+                        </a>
+                    }
+                </div>
+            </div>
+            
+            <div class="pt-20 pb-12 px-10">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+                    <div>
+                        <h1 class="text-4xl font-black text-slate-900 mb-2">@Model.Name</h1>
+                        <p class="text-slate-500 flex items-center gap-2">
+                            <i class="fas fa-map-marker-alt text-blue-500"></i> @Model.Address
+                        </p>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="text-center px-6 py-3 bg-slate-50 rounded-2xl border border-slate-100">
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Properties</p>
+                            <p class="text-xl font-black text-slate-900">@ViewBag.PropertiesCount</p>
+                        </div>
+                        <div class="text-center px-6 py-3 bg-slate-50 rounded-2xl border border-slate-100">
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Joined</p>
+                            <p class="text-xl font-black text-slate-900">@Model.CreatedAt.Year</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- About Section -->
+            <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
+                <h3 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                    <i class="fas fa-id-card text-blue-500"></i> About Member
+                </h3>
+                <div class="space-y-6">
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Email Address</p>
+                        <p class="text-slate-700 font-medium">@Model.Email</p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Phone Number</p>
+                        <p class="text-slate-700 font-medium">@(Model.PhoneNumber ?? "Not provided")</p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Age</p>
+                        <p class="text-slate-700 font-medium">@Model.Age years</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Verification & Trust -->
+            <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
+                <h3 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                    <i class="fas fa-shield-alt text-emerald-500"></i> Trust & Verification
+                </h3>
+                <div class="space-y-4">
+                    @if (Model.IsActive)
+                    {
+                        <div class="flex items-center gap-4 p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
+                            <i class="fas fa-check-circle text-emerald-600 text-xl"></i>
+                            <div>
+                                <p class="text-sm font-bold text-emerald-900">Verified Member</p>
+                                <p class="text-[10px] text-emerald-600 font-medium">Account status is active and verified.</p>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="flex items-center gap-4 p-4 bg-rose-50 rounded-2xl border border-rose-100">
+                            <i class="fas fa-exclamation-triangle text-rose-600 text-xl"></i>
+                            <div>
+                                <p class="text-sm font-bold text-rose-900">Untrusted Account</p>
+                                <p class="text-[10px] text-rose-600 font-medium">This account has been blocked or deactivated.</p>
+                            </div>
+                        </div>
+                    }
+                    <div class="flex items-center gap-4 p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                        <i class="fas fa-envelope-open-text text-blue-600 text-xl"></i>
+                        <div>
+                            <p class="text-sm font-bold text-blue-900">Email Confirmed</p>
+                            <p class="text-[10px] text-blue-600 font-medium">Contact information is verified.</p>
+                        </div>
+                    </div>
+                    @if (Model.AccountType == "Owner")
+                    {
+                        <div class="flex items-center gap-4 p-4 bg-purple-50 rounded-2xl border border-purple-100">
+                            <i class="fas fa-hotel text-purple-600 text-xl"></i>
+                            <div>
+                                <p class="text-sm font-bold text-purple-900">Professional Host</p>
+                                <p class="text-[10px] text-purple-600 font-medium">Manages premium properties on Locamonda.</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-10 text-center">
+            <a href="javascript:history.back()" class="inline-flex items-center gap-2 text-slate-400 hover:text-slate-600 transition font-bold no-underline group">
+                <i class="fas fa-arrow-left group-hover:-translate-x-1 transition"></i> Back to Previous Page
+            </a>
+        </div>
+    </div>
+</div>

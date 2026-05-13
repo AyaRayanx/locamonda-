@@ -4,6 +4,7 @@ using locamonda.Models.ViewModels;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 
@@ -27,7 +28,7 @@ namespace locamonda.Controllers
             _webHostEnvironment = webHostEnvironment;
         }
 
-        // ─── Register ───────────────────────────────────────────
+        // User Register
 
         public IActionResult Register()
         {
@@ -75,7 +76,7 @@ namespace locamonda.Controllers
             return View(model);
         }
 
-        // ─── Login ───────────────────────────────────────────────
+        // User Login
 
         public IActionResult Login()
         {
@@ -90,6 +91,13 @@ namespace locamonda.Controllers
         {
             if (ModelState.IsValid)
             {
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                if (user != null && !user.IsActive)
+                {
+                    ModelState.AddModelError(string.Empty, "Your account has been deactivated. Please contact support.");
+                    return View(model);
+                }
+
                 var result = await _signInManager.PasswordSignInAsync(
                     model.Email, 
                     model.Password, 
@@ -98,7 +106,7 @@ namespace locamonda.Controllers
 
                 if (result.Succeeded)
                 {
-                    return RedirectToAction("Profile", "Users");
+                    return RedirectToAction("Index", "Property");
                 }
 
                 ModelState.AddModelError(string.Empty, "Invalid login attempt.");
@@ -107,7 +115,7 @@ namespace locamonda.Controllers
             return View(model);
         }
 
-        // ─── Logout ──────────────────────────────────────────────
+        // User Logout
 
         public async Task<IActionResult> Logout()
         {
@@ -115,7 +123,18 @@ namespace locamonda.Controllers
             return RedirectToAction("Login");
         }
 
-        // ─── Profile ─────────────────────────────────────────────
+        // User Profile
+        
+        public async Task<IActionResult> Details(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return NotFound();
+
+            // Fetch some stats if needed (e.g. properties owned if it's an owner)
+            ViewBag.PropertiesCount = await _context.Properties.CountAsync(p => p.OwnerId == id && p.IsApproved);
+            
+            return View(user);
+        }
 
         public async Task<IActionResult> Profile()
         {
@@ -131,35 +150,33 @@ namespace locamonda.Controllers
         [HttpPost]
         public async Task<IActionResult> Profile(Users updatedUser, IFormFile? profileImage)
         {
-
+            ModelState.Clear();
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
                 return RedirectToAction("Login");
-            if (ModelState.IsValid)
+            
+            // Validate basic fields manually if needed, but for now we trust the inputs
+            if (string.IsNullOrEmpty(updatedUser.Name))
             {
-                // 1. معالجة رفع الصورة لو موجودة
-                if (profileImage != null && profileImage.Length > 0)
+                ModelState.AddModelError("Name", "Name is required");
+                ViewData["HideBooking"] = true;
+                return View(user);
+            }
+            // Save Picture
+            if (profileImage != null && profileImage.Length > 0)
+            {
+                string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + profileImage.FileName;
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
-                    // تحديد مسار الفولدر
-                    string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
-
-                    // التأكد إن الفولدر موجود
-                    if (!Directory.Exists(uploadsFolder))
-                        Directory.CreateDirectory(uploadsFolder);
-
-                    // توليد اسم فريد للصورة
-                    string uniqueFileName = Guid.NewGuid().ToString() + "_" + profileImage.FileName;
-                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                    // حفظ الملف فعلياً
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await profileImage.CopyToAsync(fileStream);
-                    }
-
-                    // تحديث اسم الصورة في الموديل (الخاصية اللي زودناها)
-                    user.ProfilePicture = uniqueFileName;
+                    await profileImage.CopyToAsync(fileStream);
                 }
+                user.ProfilePicture = "/uploads/" + uniqueFileName;
+            }
                 // Only update allowed fields
                 user.Name = updatedUser.Name;
                 user.PhoneNumber = updatedUser.PhoneNumber;
@@ -179,9 +196,7 @@ namespace locamonda.Controllers
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
 
-               
-            }
-            // عشان اخفي زرار الحجز
+            // Hide UI
             ViewData["HideBooking"] = true;
             return View(user);
         }

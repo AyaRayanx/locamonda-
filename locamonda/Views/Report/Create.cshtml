@@ -1,0 +1,42 @@
+@model locamonda.Models.Report
+@{
+    ViewData["Title"] = "Submit Report";
+}
+
+<div class="min-h-screen bg-slate-950 px-6 py-20 text-white">
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-xl shadow-2xl">
+            <h1 class="text-3xl font-bold mb-2">Submit a Report</h1>
+            <p class="text-slate-400 mb-8">Help us keep the community safe. Please provide details about the issue.</p>
+
+            <form asp-action="Create" method="post" class="space-y-6">
+                <input type="hidden" asp-for="PropertyId" />
+                <input type="hidden" asp-for="ReportedUserId" />
+
+                <div>
+                    <label class="block text-slate-400 mb-2 text-sm font-medium">Reason for Report</label>
+                    <textarea asp-for="Reason" required
+                              class="w-full p-4 rounded-2xl bg-slate-900 border border-slate-700 text-white focus:ring-2 focus:ring-red-500 outline-none transition" 
+                              rows="5" placeholder="Please describe the issue in detail..."></textarea>
+                    <span asp-validation-for="Reason" class="text-red-400 text-xs mt-1"></span>
+                </div>
+
+                <div class="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl">
+                    <p class="text-xs text-red-300">
+                        <i class="fas fa-exclamation-triangle mr-2"></i> 
+                        False reporting may lead to account suspension. Please ensure the information provided is accurate.
+                    </p>
+                </div>
+
+                <div class="flex gap-4 pt-4">
+                    <button type="submit" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-bold text-lg transition shadow-xl shadow-red-900/20">
+                        Submit Report
+                    </button>
+                    <button type="button" onclick="history.back()" class="px-8 bg-white/5 hover:bg-white/10 text-white py-4 rounded-2xl font-bold transition border border-white/10">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<locamonda.Models.Property>
+@model IEnumerable<locamonda.Models.Property>
 
 @{
     ViewData["Title"] = "Manage My Properties";
@@ -32,6 +32,7 @@
                             <th class="px-6 py-5 text-center text-[11px] font-black text-[#1A2B49] uppercase tracking-[0.1em]">Location</th>
                             <th class="px-6 py-5 text-center text-[11px] font-black text-[#1A2B49] uppercase tracking-[0.1em]">Price</th>
                             <th class="px-6 py-5 text-center text-[11px] font-black text-[#1A2B49] uppercase tracking-[0.1em]">Status</th>
+                            <th class="px-6 py-5 text-center text-[11px] font-black text-[#1A2B49] uppercase tracking-[0.1em]">Admin Approval</th>
                             <th class="px-8 py-5 text-right text-[11px] font-black text-[#1A2B49] uppercase tracking-[0.1em]">Actions</th>
                         </tr>
                     </thead>
@@ -75,6 +76,20 @@
                                     <span class="px-4 py-1.5 inline-flex text-[10px] font-black uppercase tracking-wider rounded-full @statusClass">
                                         @item.Status
                                     </span>
+                                </td>
+                                <td class="px-6 py-6 whitespace-nowrap text-center">
+                                    @if (item.IsApproved)
+                                    {
+                                        <span class="px-4 py-1.5 inline-flex text-[10px] font-black uppercase tracking-wider rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
+                                            <i class="fas fa-check-circle mr-1"></i> Approved
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="px-4 py-1.5 inline-flex text-[10px] font-black uppercase tracking-wider rounded-full bg-amber-50 text-amber-600 border border-amber-100">
+                                            <i class="fas fa-clock mr-1"></i> Pending Review
+                                        </span>
+                                    }
                                 </td>
                                 <td class="px-8 py-6 whitespace-nowrap text-right text-sm">
                                     <div class="flex justify-end items-center gap-3">

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<locamonda.Models.Booking>
+@model IEnumerable<locamonda.Models.Booking>
 @{
     ViewData["Title"] = "Manage Bookings";
 }
@@ -70,7 +70,10 @@
                                 </div>
                                 <div>
                                     <p class="text-[10px] text-slate-400 font-bold uppercase leading-none">Customer</p>
-                                    <p class="text-sm font-bold text-slate-700">@booking.User?.UserName</p>
+                                    <a asp-controller="Users" asp-action="Details" asp-route-id="@booking.User?.Id"
+                                       class="text-sm font-bold text-blue-600 hover:underline no-underline">
+                                        @booking.User?.Name
+                                    </a>
                                 </div>
                             </div>
                         </div>
