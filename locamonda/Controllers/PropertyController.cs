@@ -135,7 +135,16 @@ namespace locamonda.Controllers
         [Authorize(Roles = "Owner")]
         public async Task<IActionResult> Create(Property property, string CategoryName, string LocationName, List<IFormFile> imageFiles)
         {
-            ModelState.Clear();
+            foreach (var key in new[] { "Owner", "Location", "Category", "Photos", "Favorites", "Bookings", "Reviews" })
+                ModelState.Remove(key);
+
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Locations = new SelectList(_context.Locations, "LocationId", "City");
+                ViewBag.Categories = new SelectList(_context.Categories, "CategoryId", "Name");
+                return View(property);
+            }
+
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();
 
@@ -219,7 +228,15 @@ namespace locamonda.Controllers
         [Authorize(Roles = "Owner")]
         public async Task<IActionResult> Edit(Property updatedProperty, string LocationName, string CategoryName, List<IFormFile> imageFiles)
         {
-            ModelState.Clear(); // Using simple model state clear since we handle mapping manually
+            foreach (var key in new[] { "Owner", "Location", "Category", "Photos", "Favorites", "Bookings", "Reviews" })
+                ModelState.Remove(key);
+
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Locations = new SelectList(_context.Locations, "LocationId", "City");
+                ViewBag.Categories = new SelectList(_context.Categories, "CategoryId", "Name");
+                return View(updatedProperty);
+            }
 
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();

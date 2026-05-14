@@ -12,8 +12,8 @@ using locamonda.Data;
 namespace locamonda.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260513114932_SyncDatabaseSchema")]
-    partial class SyncDatabaseSchema
+    [Migration("20260513212239_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -158,28 +158,6 @@ namespace locamonda.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("locamonda.Models.Amenity", b =>
-                {
-                    b.Property<int>("AmenityId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AmenityId"));
-
-                    b.Property<string>("Icon")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("AmenityId");
-
-                    b.ToTable("Amenities");
-                });
-
             modelBuilder.Entity("locamonda.Models.Booking", b =>
                 {
                     b.Property<int>("BookingId")
@@ -306,45 +284,6 @@ namespace locamonda.Migrations
                     b.ToTable("Locations");
                 });
 
-            modelBuilder.Entity("locamonda.Models.Message", b =>
-                {
-                    b.Property<int>("MessageId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MessageId"));
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("PropertyId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ReceiverId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SenderId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("SentAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("MessageId");
-
-                    b.HasIndex("PropertyId");
-
-                    b.HasIndex("ReceiverId");
-
-                    b.HasIndex("SenderId");
-
-                    b.ToTable("Messages");
-                });
-
             modelBuilder.Entity("locamonda.Models.Notification", b =>
                 {
                     b.Property<int>("NotificationId")
@@ -366,8 +305,8 @@ namespace locamonda.Migrations
 
                     b.Property<string>("Type")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -416,6 +355,9 @@ namespace locamonda.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PropertyId"));
 
+                    b.Property<double>("Area")
+                        .HasColumnType("float");
+
                     b.Property<int>("Bathrooms")
                         .HasColumnType("int");
 
@@ -429,6 +371,21 @@ namespace locamonda.Migrations
                         .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
+
+                    b.Property<bool>("HasAC")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HasGarden")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HasGym")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HasHeating")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HasWifi")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -472,25 +429,9 @@ namespace locamonda.Migrations
 
                     b.HasIndex("OwnerId");
 
+                    b.HasIndex("Price");
+
                     b.ToTable("Properties");
-                });
-
-            modelBuilder.Entity("locamonda.Models.PropertyAmenity", b =>
-                {
-                    b.Property<int>("PropertyId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("AmenityId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PropertyAmenityId")
-                        .HasColumnType("int");
-
-                    b.HasKey("PropertyId", "AmenityId");
-
-                    b.HasIndex("AmenityId");
-
-                    b.ToTable("PropertyAmenities");
                 });
 
             modelBuilder.Entity("locamonda.Models.Report", b =>
@@ -752,33 +693,6 @@ namespace locamonda.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("locamonda.Models.Message", b =>
-                {
-                    b.HasOne("locamonda.Models.Property", "Property")
-                        .WithMany("Messages")
-                        .HasForeignKey("PropertyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("locamonda.Models.Users", "Receiver")
-                        .WithMany("ReceivedMessages")
-                        .HasForeignKey("ReceiverId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("locamonda.Models.Users", "Sender")
-                        .WithMany("SentMessages")
-                        .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Property");
-
-                    b.Navigation("Receiver");
-
-                    b.Navigation("Sender");
-                });
-
             modelBuilder.Entity("locamonda.Models.Notification", b =>
                 {
                     b.HasOne("locamonda.Models.Users", "User")
@@ -828,25 +742,6 @@ namespace locamonda.Migrations
                     b.Navigation("Owner");
                 });
 
-            modelBuilder.Entity("locamonda.Models.PropertyAmenity", b =>
-                {
-                    b.HasOne("locamonda.Models.Amenity", "Amenity")
-                        .WithMany("PropertyAmenities")
-                        .HasForeignKey("AmenityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("locamonda.Models.Property", "Property")
-                        .WithMany("PropertyAmenities")
-                        .HasForeignKey("PropertyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Amenity");
-
-                    b.Navigation("Property");
-                });
-
             modelBuilder.Entity("locamonda.Models.Report", b =>
                 {
                     b.HasOne("locamonda.Models.Property", "Property")
@@ -891,11 +786,6 @@ namespace locamonda.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("locamonda.Models.Amenity", b =>
-                {
-                    b.Navigation("PropertyAmenities");
-                });
-
             modelBuilder.Entity("locamonda.Models.Category", b =>
                 {
                     b.Navigation("Properties");
@@ -912,11 +802,7 @@ namespace locamonda.Migrations
 
                     b.Navigation("Favorites");
 
-                    b.Navigation("Messages");
-
                     b.Navigation("Photos");
-
-                    b.Navigation("PropertyAmenities");
 
                     b.Navigation("Reviews");
                 });
@@ -931,11 +817,7 @@ namespace locamonda.Migrations
 
                     b.Navigation("Properties");
 
-                    b.Navigation("ReceivedMessages");
-
                     b.Navigation("Reviews");
-
-                    b.Navigation("SentMessages");
                 });
 #pragma warning restore 612, 618
         }

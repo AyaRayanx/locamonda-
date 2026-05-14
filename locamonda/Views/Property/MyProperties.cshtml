@@ -47,7 +47,7 @@
                                                 var photo = item.Photos?.FirstOrDefault(p => p.IsMain) ?? item.Photos?.FirstOrDefault();
                                                 var photoUrl = photo?.PhotoUrl;
                                                 var displayPhoto = !string.IsNullOrEmpty(photoUrl)
-                                                ? (photoUrl.StartsWith("/") ? photoUrl : "/uploads/" + photoUrl)
+                                                ? (photoUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? photoUrl : (photoUrl.StartsWith("/") ? photoUrl : "/uploads/" + photoUrl))
                                                 : "/images/placeholder.jpg";
                                             }
                                             <img src="@displayPhoto" class="h-full w-full object-cover" alt="Property">

@@ -276,6 +276,7 @@ namespace locamonda.Controllers
 
             var bookings = await _context.Bookings
                 .Include(b => b.Property)
+                .ThenInclude(p => p.Photos)
                 .Include(b => b.User)
                 .Where(b => b.Property.OwnerId == user.Id)
                 .ToListAsync();

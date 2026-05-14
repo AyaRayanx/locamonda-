@@ -33,7 +33,7 @@
                             @* بنستخدم Url.Content مع العلامة ~ لضمان الوصول للمجلد صح *@
                             var photoName = booking.Property.Photos.FirstOrDefault(p => p.IsMain)?.PhotoUrl ?? booking.Property.Photos.First().PhotoUrl;
 
-                            <img src="@Url.Content("~/uploads/" + photoName)"
+                            <img src="@Url.Content(photoName)"
                                  class="w-full h-full object-cover transition duration-700 group-hover:scale-110"
                                  alt="Property" />
                         }

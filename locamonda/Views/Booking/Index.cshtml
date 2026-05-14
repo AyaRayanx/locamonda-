@@ -27,7 +27,7 @@
                     <div class="w-full md:w-64 h-44 flex-shrink-0 overflow-hidden rounded-[1.5rem] bg-gray-100 relative">
                         @if (booking.Property?.Photos != null && booking.Property.Photos.Any())
                         {
-                            <img src="@Url.Content("~/uploads/" + booking.Property.Photos.First().PhotoUrl)"
+                            <img src="@Url.Content(booking.Property.Photos.First().PhotoUrl)"
                                  class="w-full h-full object-cover transition duration-700 group-hover:scale-110"
                                  alt="@booking.Property.Title" />
                         }
