@@ -1,6 +1,8 @@
 # Locamonda
 
-A real estate web application built with **ASP.NET Core MVC**. Locamonda provides a platform for managing and browsing properties, with separate workflows for customers, property owners, and administrators.
+A real estate web application built with **ASP.NET Core MVC** as a **team project for a Software Engineering course at university**.
+
+The application provides a platform for browsing and managing properties, with separate workflows for customers, property owners, and administrators.
 
 ## Features
 
@@ -11,7 +13,7 @@ A real estate web application built with **ASP.NET Core MVC**. Locamonda provide
 * Property approval and availability management
 * Property booking
 * Customer reviews and ratings
-* Separate access and functionality for:
+* Separate functionality for:
 
   * **Customer**
   * **Owner**
@@ -44,7 +46,7 @@ Locamonda
 └── Program.cs
 ```
 
-Entity Framework Core is used for database access and migrations, while ASP.NET Core Identity handles authentication and user roles.
+Entity Framework Core is used for database access and migrations, while ASP.NET Core Identity handles authentication and role management.
 
 ## User Roles
 
@@ -80,15 +82,13 @@ The main entities include:
 * `Review`
 * `ApplicationUser`
 
-Relationships between these entities are managed using **Entity Framework Core**.
+Entity relationships and database operations are managed using **Entity Framework Core**.
 
-Properties shown to customers are filtered based on their current status, including whether they are active, approved, and available.
+Properties available to customers are filtered based on their current status, including whether they are active, approved, and available.
 
 ## Getting Started
 
 ### Prerequisites
-
-Make sure you have:
 
 * [.NET 8 SDK](https://dotnet.microsoft.com/)
 * SQL Server or SQL Server LocalDB
@@ -129,14 +129,28 @@ Open the local URL displayed in the terminal.
 
 ## Project Structure
 
-| Layer          | Responsibility                                   |
-| -------------- | ------------------------------------------------ |
-| Models         | Application entities and relationships           |
-| Controllers    | Request handling and application logic           |
-| Views          | User interface                                   |
-| Data           | Database context and configuration               |
-| Areas/Identity | Authentication and user management               |
-| wwwroot        | Static files such as CSS, JavaScript, and images |
+| Layer          | Responsibility                          |
+| -------------- | --------------------------------------- |
+| Models         | Application entities and relationships  |
+| Controllers    | Request handling and application logic  |
+| Views          | User interface                          |
+| Data           | Database context and configuration      |
+| Areas/Identity | Authentication and user management      |
+| wwwroot        | CSS, JavaScript, and other static files |
+
+## Team Project
+
+Locamonda was developed as a **team project for a Software Engineering course at university**.
+
+The project involved applying software engineering concepts to a complete web application, including:
+
+* MVC architecture
+* Database design
+* Authentication and authorization
+* Role-based access control
+* CRUD operations
+* Team collaboration
+* Git and GitHub version control
 
 ## Future Improvements
 
@@ -148,4 +162,5 @@ Open the local URL displayed in the terminal.
 * Online payment integration
 * Automated testing
 * Docker deployment
+
 
